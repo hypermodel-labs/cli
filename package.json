@@ -1,0 +1,77 @@
+{
+  "name": "openapi-mcp",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "openapi-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "vite build && cp -r openapi-spec dist/openapi-spec",
+    "start": "node dist/index.js",
+    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "publish": "npm publish --access public",
+    "gen": "pnpm gen:types && pnpm gen:objects && pnpm gen:tools",
+    "gen:types": "node dist/generateTypes.js",
+    "gen:objects": "node dist/convertTypesToObject.js",
+    "gen:tools": "node dist/createTools.js",
+    "gen:zod": "pnpm ts-to-zod src/generated/openai_oas.ts src/generated/outputZod.ts"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jatinsandilya/openapi-mcp.git"
+  },
+  "author": "jatinsandilya",
+  "description": "Generate a type-safe mcp server from an OpenApi spec",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "axios": "^1.8.1",
+    "build": "^0.1.4",
+    "dashify": "^2.0.0",
+    "detect-port": "^2.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "openapi-fetch": "^0.13.5",
+    "openapi-typescript": "*",
+    "prettier": "^3.5.3",
+    "remeda": "^2.21.2",
+    "trieve-ts-sdk": "^0.0.62",
+    "ts-morph": "^25.0.1",
+    "yaml": "^2.7.1",
+    "zod": "*"
+  },
+  "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
+    "@types/dashify": "^1.0.3",
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^5.0.1",
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^22.13.5",
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@types/rollup": "^0.54.0",
+    "events": "^3.3.0",
+    "openapi-typescript": "*",
+    "prettier-plugin-packagejson": "^2.5.10",
+    "process": "^0.11.10",
+    "rollup": "^4.37.0",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "stream-browserify": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "ts-to-zod": "^3.15.0",
+    "typescript": "^5.7.3",
+    "vite": "^5.4.14",
+    "vite-plugin-node": "^5.0.0",
+    "vite-plugin-node-polyfills": "^0.23.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af"
+}
