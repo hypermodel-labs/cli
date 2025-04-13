@@ -42,6 +42,8 @@ export default defineConfig({
         "@modelcontextprotocol/sdk",
         "@modelcontextprotocol",
         "@redocly",
+        "@ianvs/prettier-plugin-sort-imports",
+        "prettier-plugin-packagejson",
         "ts-morph",
         "zod",
         "fs",
