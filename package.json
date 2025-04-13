@@ -1,6 +1,6 @@
 {
   "name": "@usemodel-dev/cli",
-  "version": "0.0.5",
+  "version": "0.0.5-beta.1",
   "type": "module",
   "main": "dist/cli.js",
   "bin": {
@@ -46,12 +46,14 @@
     "tsx": "^4.19.3",
     "typescript": "*",
     "yaml": "^2.7.1",
-    "zod": "*"
+    "zod": "*",
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
+    "prettier-plugin-packagejson": "^2.5.10"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
+
     "@types/dashify": "^1.0.3",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^5.0.1",
