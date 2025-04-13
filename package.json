@@ -4,6 +4,7 @@
   "type": "module",
   "main": "dist/cli.js",
   "bin": {
+    "cli": "./dist/cli.js",
     "generate": "node --experimental-specifier-resolution=node ./dist/cli.js generate",
     "build": "pnpm run build",
     "start": "pnpm run build && node --experimental-specifier-resolution=node ./dist/index.js"
