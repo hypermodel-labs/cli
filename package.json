@@ -14,7 +14,8 @@
     "compile": "tsc --skipLibCheck --esModuleInterop --module es2022 --moduleResolution node src/generated/*.ts",
     "test": "tsx ./src/testServer.ts",
     "generate": "tsx ./src/cli.ts generate",
-    "start": "pnpm run build && node --experimental-specifier-resolution=node dist/index.js"
+    "start": "pnpm run build && node --experimental-specifier-resolution=node dist/index.js",
+    "publish": "pnpm run build && npm publish --access public"
   },
   "publishConfig": {
     "access": "public",
