@@ -50,6 +50,12 @@ importers:
       ts-morph:
         specifier: ^25.0.1
         version: 25.0.1
+      tsc:
+        specifier: '*'
+        version: 2.0.4
+      tsx:
+        specifier: ^4.19.3
+        version: 4.19.3
       yaml:
         specifier: ^2.7.1
         version: 2.7.1
@@ -114,9 +120,6 @@ importers:
       ts-to-zod:
         specifier: ^3.15.0
         version: 3.15.0
-      tsx:
-        specifier: ^4.19.3
-        version: 4.19.3
       typescript:
         specifier: ^5.7.3
         version: 5.8.2
@@ -2237,6 +2240,10 @@ packages:
 
   ts-to-zod@3.15.0:
     resolution: {integrity: sha512-Lu5ITqD8xCIo4JZp4Cg3iSK3J2x3TGwwuDtNHfAIlx1mXWKClRdzqV+x6CFEzhKtJlZzhyvJIqg7DzrWfsdVSg==}
+    hasBin: true
+
+  tsc@2.0.4:
+    resolution: {integrity: sha512-fzoSieZI5KKJVBYGvwbVZs/J5za84f2lSTLPYf6AGiIf43tZ3GNrI1QzTLcjtyDDP4aLxd46RTZq1nQxe7+k5Q==}
     hasBin: true
 
   tslib@1.14.1:
@@ -4691,6 +4698,8 @@ snapshots:
       zod: 3.24.2
     transitivePeerDependencies:
       - supports-color
+
+  tsc@2.0.4: {}
 
   tslib@1.14.1: {}
 

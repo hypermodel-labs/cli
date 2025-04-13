@@ -4,13 +4,15 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "generate": "tsx ./src/cli.ts generate"
+    "generate": "node --experimental-specifier-resolution=node dist/cli.js generatee"
   },
   "scripts": {
     "build": "vite build",
     "strip:ts-ignore": "tsx ./src/strip-ts-ignore.ts",
+    "compile": "tsc --skipLibCheck --esModuleInterop --module es2022 --moduleResolution node src/generated/*.ts",
     "test": "tsx ./src/testServer.ts",
-    "generate": "tsx ./src/cli.ts generate"
+    "generate": "tsx ./src/cli.ts generate",
+    "start": "node --experimental-specifier-resolution=node dist/index.js"
   },
   "publishConfig": {
     "access": "public",
@@ -24,6 +26,7 @@
   "description": "Generate a type-safe mcp server from an OpenApi spec",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
+    "typescript": "*",
     "axios": "^1.8.1",
     "build": "^0.1.4",
     "commander": "^13.1.0",
@@ -38,7 +41,8 @@
     "trieve-ts-sdk": "^0.0.62",
     "ts-morph": "^25.0.1",
     "yaml": "^2.7.1",
-    "zod": "*"
+    "zod": "*",
+    "tsx": "^4.19.3"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
@@ -61,7 +65,6 @@
     "stream-browserify": "^3.0.0",
     "ts-node": "^10.9.2",
     "ts-to-zod": "^3.15.0",
-    "tsx": "^4.19.3",
     "typescript": "^5.7.3",
     "vite": "^5.4.14",
     "vite-plugin-node": "^5.0.0",

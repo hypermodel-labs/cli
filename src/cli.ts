@@ -4,13 +4,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { generateSingleFileTypesFromOas } from './generators/generateTypes';
 import { stripTSIgnore } from './strip-ts-ignore';
+import { execSync } from 'child_process';
 
 const program = new Command();
 
 program
-  .name('openapi-mcp')
+  .name('@usemodel-dev/cli')
   .description('CLI to generate MCP tools from OpenAPI specs')
-  .version('1.0.0');
+  .version('0.0.1');
 
 program
   .command('generate')
@@ -37,10 +38,11 @@ program
       console.log('✅ Runtime injected');
 
       stripTSIgnore();
-
+      // Run tsc to compile TypeScript files
+      execSync('./node_modules/typescript/bin/tsc --skipLibCheck --esModuleInterop --module es2022 --moduleResolution node src/generated/*.ts', {stdio: 'inherit'});
       console.log('✅ Cleaned up files');
 
-      await fs.promises.cp('src/generated', 'dist', { recursive: true });
+      await fs.promises.cp('src/generated', 'dist', { recursive: true, filter: (src, _) => !src.includes('.ts') });
       console.log('✅ Ready to publish');
 
     } catch (error) {

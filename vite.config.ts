@@ -8,13 +8,13 @@ export default defineConfig({
     rollupOptions: {
       input: [
         "./src/cli.ts",
-        "./src/testServer.ts"
       ],
       output: {
         format: "es",
         entryFileNames: "[name].js",
       },
       external: [
+        "@modelcontextprotocol/sdk",
         "@modelcontextprotocol",
         "@redocly",
         "ts-morph",
@@ -43,10 +43,12 @@ export default defineConfig({
         "node:https",
         "node:url",
         "node:os",
-        
+        "node-stdlib-browser",
+        "child_process"
       ],
     },
     sourcemap: true,
     target: "node16",
+    minify: false,
   },
 });

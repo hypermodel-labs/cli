@@ -27,7 +27,7 @@ export const stripTSIgnore = () => {
 const project = new Project();
 
 // Get the runtime directory path
-const generatedDir = path.join(process.cwd(), 'src', 'generated');
+const generatedDir = "src/generated"
 
 if (!fs.existsSync(generatedDir)) {
   console.error('Generated directory not found!', generatedDir);
