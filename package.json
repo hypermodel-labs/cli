@@ -29,7 +29,6 @@
   "description": "Generate a Type Safe mcp server from an OpenApi spec",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
-    "typescript": "*",
     "axios": "^1.8.1",
     "build": "^0.1.4",
     "commander": "^13.1.0",
@@ -43,9 +42,10 @@
     "remeda": "^2.21.2",
     "trieve-ts-sdk": "^0.0.62",
     "ts-morph": "^25.0.1",
+    "tsx": "^4.19.3",
+    "typescript": "*",
     "yaml": "^2.7.1",
-    "zod": "*",
-    "tsx": "^4.19.3"
+    "zod": "*"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",

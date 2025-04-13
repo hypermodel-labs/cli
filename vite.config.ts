@@ -1,7 +1,25 @@
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import type { OutputChunk, OutputAsset } from 'rollup';
 import fs from "fs";
 import path from "path";
+
+// Custom plugin to add shebang
+function addShebangPlugin() {
+  return {
+    name: 'add-shebang',
+    generateBundle(options: any, bundle: { [fileName: string]: OutputChunk | OutputAsset }) {
+      // Find the main entry point
+      const mainEntry = Object.values(bundle).find(
+        (chunk): chunk is OutputChunk => chunk.type === 'chunk' && chunk.isEntry
+      );
+      
+      if (mainEntry) {
+        mainEntry.code = `#!/usr/bin/env node\n${mainEntry.code}`;
+      }
+    },
+  };
+}
 
 const generatedIndexPath = path.resolve(__dirname, "./src/generated/index.ts");
 const inputFiles = ["./src/cli.ts"];
@@ -11,7 +29,7 @@ if (fs.existsSync(generatedIndexPath)) {
 }
 
 export default defineConfig({
-  plugins: [nodePolyfills()],
+  plugins: [nodePolyfills(), addShebangPlugin()],
   build: {
     outDir: "./dist",
     rollupOptions: {
