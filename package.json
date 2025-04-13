@@ -4,7 +4,9 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "generate": "node --experimental-specifier-resolution=node dist/cli.js generatee"
+    "generate": "node --experimental-specifier-resolution=node dist/cli.js generate",
+    "build": "pnpm run build",
+    "start": "pnpm run build && node --experimental-specifier-resolution=node dist/index.js"
   },
   "scripts": {
     "build": "vite build",
@@ -12,7 +14,7 @@
     "compile": "tsc --skipLibCheck --esModuleInterop --module es2022 --moduleResolution node src/generated/*.ts",
     "test": "tsx ./src/testServer.ts",
     "generate": "tsx ./src/cli.ts generate",
-    "start": "node --experimental-specifier-resolution=node dist/index.js"
+    "start": "pnpm run build && node --experimental-specifier-resolution=node dist/index.js"
   },
   "publishConfig": {
     "access": "public",
@@ -23,7 +25,7 @@
     "url": "git+https://github.com/usemodel-dev/cli.git"
   },
   "author": "usemodel-dev",
-  "description": "Generate a type-safe mcp server from an OpenApi spec",
+  "description": "Generate a Type Safe mcp server from an OpenApi spec",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
     "typescript": "*",

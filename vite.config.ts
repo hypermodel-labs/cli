@@ -1,14 +1,21 @@
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import fs from "fs";
+import path from "path";
+
+const generatedIndexPath = path.resolve(__dirname, "./src/generated/index.ts");
+const inputFiles = ["./src/cli.ts"];
+
+if (fs.existsSync(generatedIndexPath)) {
+  inputFiles.push("./src/generated/index.ts");
+}
 
 export default defineConfig({
   plugins: [nodePolyfills()],
   build: {
     outDir: "./dist",
     rollupOptions: {
-      input: [
-        "./src/cli.ts",
-      ],
+      input: inputFiles,
       output: {
         format: "es",
         entryFileNames: "[name].js",

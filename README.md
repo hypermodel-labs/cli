@@ -26,6 +26,12 @@ Generate the MCP server code from your OpenAPI specification:
 npx @usemodel-dev/cli generate  <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON>
 ```
 
+### Run the server locally
+
+```bash
+npx @usemodel-dev/cli start
+```
+
 ## Environment Variables
 
 The server uses dotenv for configuration. Create a `.env` file in your project root with the necessary environment variables.

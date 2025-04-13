@@ -39,7 +39,7 @@ program
 
       stripTSIgnore();
       // Run tsc to compile TypeScript files
-      execSync('./node_modules/typescript/bin/tsc --skipLibCheck --esModuleInterop --module es2022 --moduleResolution node src/generated/*.ts', {stdio: 'inherit'});
+      execSync('./node_modules/typescript/bin/tsc --target ES2020 --module CommonJS --lib ES2020 --declaration --outDir ./dist --esModuleInterop --skipLibCheck --forceConsistentCasingInFileNames src/generated/*.ts', {stdio: 'inherit'});
       console.log('✅ Cleaned up files');
 
       await fs.promises.cp('src/generated', 'dist', { recursive: true, filter: (src, _) => !src.includes('.ts') });
