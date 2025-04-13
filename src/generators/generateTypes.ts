@@ -11,7 +11,7 @@ export async function generateMeta(oas: any, opts: { exportDefault?: boolean } =
     ${opts.exportDefault ? "export default meta" : ""}
     `;
 
-  return  await prettyFormat(content, { parser: "typescript" });
+  return content
 }
 
 export async function getJson<T>(input: string): Promise<T> {
@@ -38,23 +38,10 @@ export async function generateSingleFileFromOas(
 
   const meta =  await generateMeta(oas, { exportDefault: false });
   const types = await generateTypes(oas, { exportDefault: true });
-  const prettyMeta = await prettyFormat(meta, { parser: "typescript" });
-  const prettyTypes = await prettyFormat(types, { parser: "typescript" });
   return `
-${prettyMeta}
-${prettyTypes}
+${meta}
+${types}
   `;
-}
-
-export async function prettyFormat(
-  content: string,
-  opts?: { parser?: "typescript" | "json" | "yaml" }
-) {
-  return prettier.format(content, {
-    // @ts-ignore
-    ...(await import("../prettier.config.js")).default,
-    parser: opts?.parser ?? "typescript",
-  });
 }
 
 export async function generateTypes(
