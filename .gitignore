@@ -1,3 +1,5 @@
 node_modules/
 .env
 dist/
+openapi-spec
+./src/generated/**/*.ts

@@ -7,10 +7,8 @@ export default defineConfig({
     outDir: "./dist",
     rollupOptions: {
       input: [
-        "./src/index.ts",
-        "./src/convertTypesToObject.ts",
-        "./src/generateTypes.ts",
-        "./src/createTools.ts",
+        "./src/cli.ts",
+        "./src/testServer.ts"
       ],
       output: {
         format: "es",
@@ -30,6 +28,7 @@ export default defineConfig({
         "prettier",
         "express",
         "async_hooks",
+        "commander",
         "node-stdlib-browser",
         "detect-port",
         "crypto",

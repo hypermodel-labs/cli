@@ -1,8 +1,8 @@
 import { z } from "zod";
 import createClient from "openapi-fetch";
-import { paths } from "./generated/output";
+import { paths } from "../generated/output";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { meta } from "./generated/openai_oas";
+import { meta } from "./oas";
 
 type Paths = typeof paths
 
@@ -19,7 +19,7 @@ const createToolName = (path: string) => {
 }
 
 
-export const createTools = (server: McpServer) => {
+export const createTools = async (server: McpServer) => {
   const pathKeys = Object.keys(paths)
   pathKeys.forEach((p) => {
   const path = paths[p as keyof typeof paths]
@@ -27,24 +27,21 @@ export const createTools = (server: McpServer) => {
   if(method) {
     const toolName = method + "_" + createToolName(p);
     const toolDescription = `Use this tool to ${method} ${p}`;
-    console.log("[DEBUG] Creating tool:", toolName)
-    console.log("[DEBUG] toolDescription:", toolDescription)
     server.tool(
       toolName,
       toolDescription,
       {
-        requestBody: z.record(z.string(), z.any()).describe("Request body"),
-        parameters: z.record(z.string(), z.any()).describe("Request parameters"),
+        body: z.record(z.string(), z.any()).optional().describe("Request body"),
+        parameters: z.record(z.string(), z.any()).optional().describe("Request parameters"),
         method: z.enum(['get', 'post', 'put', 'delete', 'patch']).describe("Request HTTP method"),
-        headers: z.record(z.string(), z.any()).describe("Request headers"),
+        headers: z.record(z.string(), z.any()).optional().describe("Request headers"),
       },
-      async ({requestBody, parameters, method, headers }) => {
+      async ({body, parameters, method, headers }) => {
         try {
-          // @ts-ignore
-          const clientMethod = client[method]; 
+          const clientMethod = client[method.toUpperCase()];
           const response = await clientMethod(p as any, { // TODO: improve type here.
               params: parameters,
-              body: requestBody,
+              body: body,
               headers: headers,
           });
           return {
@@ -57,6 +54,7 @@ export const createTools = (server: McpServer) => {
           };
       }
       catch (error) {
+          console.log("[DEBUG] Error:", error)
           const errMsg = JSON.stringify(error, undefined, 2);
           return {
               isError: true,

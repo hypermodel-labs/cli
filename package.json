@@ -1,21 +1,16 @@
 {
-  "name": "openapi-mcp",
+  "name": "@usemodel-dev/cli",
   "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "openapi-mcp": "./dist/index.js"
+    "generate": "tsx ./src/cli.ts generate"
   },
   "scripts": {
-    "build": "vite build && cp -r openapi-spec dist/openapi-spec",
-    "start": "node dist/index.js",
-    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js",
-    "publish": "npm publish --access public",
-    "gen": "pnpm gen:types && pnpm gen:objects && pnpm gen:tools",
-    "gen:types": "node dist/generateTypes.js",
-    "gen:objects": "node dist/convertTypesToObject.js",
-    "gen:tools": "node dist/createTools.js",
-    "gen:zod": "pnpm ts-to-zod src/generated/openai_oas.ts src/generated/outputZod.ts"
+    "build": "vite build",
+    "strip:ts-ignore": "tsx ./src/strip-ts-ignore.ts",
+    "test": "tsx ./src/testServer.ts",
+    "generate": "tsx ./src/cli.ts generate"
   },
   "publishConfig": {
     "access": "public",
@@ -23,14 +18,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jatinsandilya/openapi-mcp.git"
+    "url": "git+https://github.com/usemodel-dev/cli.git"
   },
-  "author": "jatinsandilya",
+  "author": "usemodel-dev",
   "description": "Generate a type-safe mcp server from an OpenApi spec",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
     "axios": "^1.8.1",
     "build": "^0.1.4",
+    "commander": "^13.1.0",
     "dashify": "^2.0.0",
     "detect-port": "^2.1.0",
     "dotenv": "^16.4.7",
@@ -65,6 +61,7 @@
     "stream-browserify": "^3.0.0",
     "ts-node": "^10.9.2",
     "ts-to-zod": "^3.15.0",
+    "tsx": "^4.19.3",
     "typescript": "^5.7.3",
     "vite": "^5.4.14",
     "vite-plugin-node": "^5.0.0",

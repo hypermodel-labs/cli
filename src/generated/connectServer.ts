@@ -96,9 +96,9 @@ export async function connectServer(server: McpServer): Promise<express.Applicat
 
     app.listen(port, () => {
         if(port !== DEFAULT_PORT) {
-            console.error(`Port ${DEFAULT_PORT} is already in use. MCP Server running on SSE at http://localhost:${port}`);
+            console.error(`[DEBUG] Port ${DEFAULT_PORT} is already in use. MCP Server running on SSE at http://localhost:${port}`);
         } else {
-            console.error(`MCP Server running on SSE at http://localhost:${port}`);
+            console.error(`[DEBUG] MCP Server running on SSE at http://localhost:${port}`);
         }
     });
 

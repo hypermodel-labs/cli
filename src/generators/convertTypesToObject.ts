@@ -1,19 +1,28 @@
 import { Project, SourceFile, Type, Node, InterfaceDeclaration, TypeAliasDeclaration } from "ts-morph";
-import ts from "typescript";
 import fs from "fs";
+import path from "path";
 
-export const convert = () => {
+export const convertTypesToObject = async (typesFilePath: string): Promise<string> => {
   const project = new Project({
     tsConfigFilePath: "./tsconfig.json",
   });
 
-  const sourceFile = project.addSourceFileAtPath("src/generated/openai_oas.ts");
+  const sourceFile = project.addSourceFileAtPath(typesFilePath);
   const interfaceNames = ["components", "paths", "operations"];
 
   const lines = interfaceNames.map(name => convertInterface(sourceFile, name));
   const result = lines.join("\n\n");
-  fs.writeFileSync("src/generated/output.ts", result);
-  console.log("✅ Written to src/generated/output.ts");
+  const outputFilePath = `./src/generated/output.ts`;
+  
+  // Ensure the directory exists
+  const outputDir = path.dirname(outputFilePath);
+  fs.mkdirSync(outputDir, { recursive: true });
+  
+  // Write the file
+  fs.writeFileSync(outputFilePath, result);
+  console.log(`✅ Written to ${outputFilePath}`);
+
+  return outputFilePath
 };
 
 function convertInterface(sourceFile: SourceFile, interfaceName: string) {
@@ -78,5 +87,3 @@ function formatProperty(p: import("ts-morph").Symbol, declNode: Node): string {
   const value = optional ? "undefined" : resolveType(propType);
   return `${JSON.stringify(name)}: ${value}`;
 }
-
-convert();

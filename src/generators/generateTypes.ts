@@ -3,7 +3,7 @@ import yaml from "yaml";
 import {pick} from "remeda";
 import openapiTS, { astToString, OpenAPI3 } from "openapi-typescript";
 import prettier from "prettier";
-
+import path from "path";
 export async function generateMeta(oas: any, opts: { exportDefault?: boolean } = {}) {
   const data = pick(oas, ["info", "servers"]);
   const content = `
@@ -52,7 +52,7 @@ export async function prettyFormat(
 ) {
   return prettier.format(content, {
     // @ts-ignore
-    ...(await import("./prettier.config.js")).default,
+    ...(await import("../prettier.config.js")).default,
     parser: opts?.parser ?? "typescript",
   });
 }
@@ -81,16 +81,21 @@ export async function generateTypes(
   `;
 }
 
-const yamlFileName = "openai";
-const filePath = `./openapi-spec/${yamlFileName}.yaml`
 
-export const generate = async () => {
-  const ret = await generateSingleFileFromOas(filePath, {name: yamlFileName})
+export const generateSingleFileTypesFromOas = async (filePath: string, fileName: string): Promise<string> => {
+  const ret = await generateSingleFileFromOas(filePath, {name: fileName})
   
-  fs.writeFileSync(`./src/generated/${yamlFileName}_oas.ts`, ret)
 
-  console.log(`✅ Written to src/generated/${yamlFileName}_oas.ts`);
+  
+  const generatedFilePath = `./src/generated/oas.ts`
+
+  // Ensure the directory exists
+  const outputDir = path.dirname(generatedFilePath);
+  fs.mkdirSync(outputDir, { recursive: true });
+  
+  fs.writeFileSync(generatedFilePath, ret)
+
+  console.log(`✅ Written to ${generatedFilePath}`);
+
+  return generatedFilePath
 }
-
-
-generate();
