@@ -1,12 +1,12 @@
 {
   "name": "@usemodel-dev/cli",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "main": "dist/cli.js",
   "bin": {
-    "generate": "node --experimental-specifier-resolution=node dist/cli.js generate",
+    "generate": "node --experimental-specifier-resolution=node ./dist/cli.js generate",
     "build": "pnpm run build",
-    "start": "pnpm run build && node --experimental-specifier-resolution=node dist/index.js"
+    "start": "pnpm run build && node --experimental-specifier-resolution=node ./dist/index.js"
   },
   "scripts": {
     "build": "vite build",
