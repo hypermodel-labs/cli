@@ -36,8 +36,6 @@ program
       await convertTypesToObject(typesFilePath, options.output);
 
       console.log(`✅ Mcp server objects & types generated`);
-      await fs.promises.cp('src/runtime', options.output, { recursive: true });
-      console.log('✅ Runtime injected');
 
       stripTSIgnore(options.output);
       console.log('✅ Cleaned up files');

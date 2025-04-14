@@ -5,17 +5,17 @@
   "main": "dist/cli.js",
   "bin": {
     "cli": "./dist/cli.js",
-    "generate": "node --experimental-specifier-resolution=node ./dist/cli.js generate",
+    "generate": "NODE_ENV=production node --experimental-specifier-resolution=node ./dist/cli.js generate",
     "build": "pnpm run build",
     "start": "pnpm run build && node --experimental-specifier-resolution=node ./dist/index.js"
   },
   "scripts": {
-    "build": "vite build --mode cli",
+    "build": "GENERATED_OUTPUT_DIR=./generated vite build --mode cli",
     "build:server": "vite build --mode server",
     "strip:ts-ignore": "tsx ./src/strip-ts-ignore.ts",
     "compile": "tsc --skipLibCheck --esModuleInterop --module es2022 --moduleResolution node src/generated/*.ts",
     "test": "tsx ./src/testServer.ts",
-    "generate": "tsx ./src/cli.ts generate",
+    "generate": "NODE_ENV=production tsx ./src/cli.ts generate",
     "start": "node --experimental-specifier-resolution=node dist/index.js",
     "publish": "pnpm run build && npm publish --access public"
   },
@@ -30,6 +30,7 @@
   "author": "usemodel-dev",
   "description": "Generate a Type Safe mcp server from an OpenApi spec",
   "dependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@modelcontextprotocol/sdk": "^1.6.1",
     "axios": "^1.8.1",
     "build": "^0.1.4",
@@ -41,20 +42,19 @@
     "openapi-fetch": "^0.13.5",
     "openapi-typescript": "*",
     "prettier": "^3.5.3",
+    "prettier-plugin-packagejson": "^2.5.10",
     "remeda": "^2.21.2",
     "trieve-ts-sdk": "^0.0.62",
     "ts-morph": "^25.0.1",
     "tsx": "^4.19.3",
     "typescript": "*",
     "yaml": "^2.7.1",
-    "zod": "*",
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
-    "prettier-plugin-packagejson": "^2.5.10"
+    "zod": "*"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
-
+    "@rollup/plugin-dynamic-import-vars": "^2.1.5",
     "@types/dashify": "^1.0.3",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^5.0.1",
@@ -73,7 +73,8 @@
     "ts-node": "^10.9.2",
     "ts-to-zod": "^3.15.0",
     "typescript": "^5.7.3",
-    "vite": "^5.4.14",
+    "vite": "^6.2.6",
+    "vite-plugin-dynamic-import": "^1.6.0",
     "vite-plugin-node": "^5.0.0",
     "vite-plugin-node-polyfills": "^0.23.0"
   },

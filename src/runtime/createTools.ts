@@ -1,10 +1,11 @@
 import { z } from "zod";
 import createClient from "openapi-fetch";
-import { paths } from "./output";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-// @ts-ignore
-import { meta } from "./oas";
+// Dynamically import paths from GENERATED_OUTPUT_DIR
 
+
+const { paths } = await import(/* @vite-ignore */`./src${process.env.GENERATED_OUTPUT_DIR}/output.js`);
+const { meta } = await import(/* @vite-ignore */`./src${process.env.GENERATED_OUTPUT_DIR}/oas.js`);
 type Paths = typeof paths
 
 const client = createClient<Paths>({
