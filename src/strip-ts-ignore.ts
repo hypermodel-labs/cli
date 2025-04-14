@@ -22,12 +22,12 @@ function getTypeScriptFiles(dir: string): string[] {
 }
 
 
-export const stripTSIgnore = () => {
+export const stripTSIgnore = (outputDir: string) => {
 // Initialize ts-morph project
 const project = new Project();
 
 // Get the runtime directory path
-const generatedDir = "src/generated"
+const generatedDir = outputDir
 
 if (!fs.existsSync(generatedDir)) {
   console.error('Generated directory not found!', generatedDir);

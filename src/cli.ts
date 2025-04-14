@@ -1,4 +1,4 @@
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import { convertTypesToObject } from './generators/convertTypesToObject';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -17,8 +17,10 @@ program
   .command('generate')
   .description('Generate MCP tools from OpenAPI spec')
   .argument('<filepath>', 'Path to OpenAPI specification file')
-  .action(async (filepath: string) => {
+  .addOption(new Option('-o, --output <dir>', 'Path to output directory').default('./src/generated'))
+  .action(async (filepath: string, options: { output: string }) => {
     try {
+      console.log("Running from:", process.cwd(), options.output);
       // Resolve absolute path
       const absolutePath = path.resolve(filepath);
       
@@ -29,20 +31,18 @@ program
       }
 
       console.log('Generating types from OpenAPI spec file...');
-      const typesFilePath = await generateSingleFileTypesFromOas(absolutePath, "oas");
+      const typesFilePath = await generateSingleFileTypesFromOas(absolutePath, "oas", options.output);
 
-      await convertTypesToObject(typesFilePath);
+      await convertTypesToObject(typesFilePath, options.output);
 
       console.log(`✅ Mcp server objects & types generated`);
-      await fs.promises.cp('src/runtime', 'src/generated', { recursive: true });
+      await fs.promises.cp('src/runtime', options.output, { recursive: true });
       console.log('✅ Runtime injected');
 
-      stripTSIgnore();
-      // Run tsc to compile TypeScript files
-      execSync('./node_modules/typescript/bin/tsc --target ES2020 --module CommonJS --lib ES2020 --declaration --outDir ./dist --esModuleInterop --skipLibCheck --forceConsistentCasingInFileNames src/generated/*.ts', {stdio: 'inherit'});
+      stripTSIgnore(options.output);
       console.log('✅ Cleaned up files');
 
-      await fs.promises.cp('src/generated', 'dist', { recursive: true, filter: (src, _) => !src.includes('.ts') });
+      // await fs.promises.cp('src/generated', 'dist', { recursive: true, filter: (src, _) => !src.includes('.ts') });
       console.log('✅ Ready to publish');
 
     } catch (error) {

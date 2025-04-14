@@ -38,9 +38,11 @@ export async function generateSingleFileFromOas(
 
   const meta =  await generateMeta(oas, { exportDefault: false });
   const types = await generateTypes(oas, { exportDefault: true });
+  const prettyMeta = await prettier.format(meta, { parser: "typescript" }); 
+  const prettyTypes = await prettier.format(types, { parser: "typescript" });
   return `
-${meta}
-${types}
+${prettyMeta}
+${prettyTypes}
   `;
 }
 
@@ -69,15 +71,13 @@ export async function generateTypes(
 }
 
 
-export const generateSingleFileTypesFromOas = async (filePath: string, fileName: string): Promise<string> => {
+export const generateSingleFileTypesFromOas = async (filePath: string, fileName: string, outputDir: string): Promise<string> => {
   const ret = await generateSingleFileFromOas(filePath, {name: fileName})
   
 
   
-  const generatedFilePath = `./src/generated/oas.ts`
+  const generatedFilePath = `${outputDir}/oas.ts`
 
-  // Ensure the directory exists
-  const outputDir = path.dirname(generatedFilePath);
   fs.mkdirSync(outputDir, { recursive: true });
   
   fs.writeFileSync(generatedFilePath, ret)

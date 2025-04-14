@@ -1,6 +1,6 @@
 import { z } from "zod";
 import createClient from "openapi-fetch";
-import { paths } from "../generated/output";
+import { paths } from "./output";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 // @ts-ignore
 import { meta } from "./oas";

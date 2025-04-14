@@ -23,14 +23,29 @@ The package provides several CLI commands for managing your MCP server:
 Generate the MCP server code from your OpenAPI specification:
 
 ```bash
-pnpm generate  <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON>
+pnpm generate  <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON> --output <dir> (optional)
+
 ```
 
+>This will create the mcp server files in the `src/generated` folder. 
+
 ### Run the server locally
+
+
+Build the server
+
+```bash
+pnpm build:server
+```
+> You need to run generate command before thi.s 
 
 ```bash
 pnpm start
 ```
+This will start the server at `http:localhost:3001` 
+
+![OpenAPI-MCP Demo](assets/log.png)
+
 
 ## Environment Variables
 

@@ -1,8 +1,7 @@
 import { Project, SourceFile, Type, Node, InterfaceDeclaration, TypeAliasDeclaration } from "ts-morph";
 import fs from "fs";
-import path from "path";
 
-export const convertTypesToObject = async (typesFilePath: string): Promise<string> => {
+export const convertTypesToObject = async (typesFilePath: string, outputDir: string): Promise<string> => {
   const project = new Project({
     tsConfigFilePath: "./tsconfig.json",
   });
@@ -12,10 +11,8 @@ export const convertTypesToObject = async (typesFilePath: string): Promise<strin
 
   const lines = interfaceNames.map(name => convertInterface(sourceFile, name));
   const result = lines.join("\n\n");
-  const outputFilePath = `./src/generated/output.ts`;
+  const outputFilePath = `${outputDir}/output.ts`;
   
-  // Ensure the directory exists
-  const outputDir = path.dirname(outputFilePath);
   fs.mkdirSync(outputDir, { recursive: true });
   
   // Write the file
