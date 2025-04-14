@@ -1,5 +1,4 @@
 ![OpenAPI-MCP Architecture](assets/openapi-mcp.png)
-> ⚠️ **Experimental**: This project is in early development and APIs may change significantly between versions. Use with caution in production environments.
 
 # OpenAPI x MCP
 
