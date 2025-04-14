@@ -8,11 +8,10 @@
     "server": "./dist/server.js"
   },
   "scripts": {
-    "build:server": "vite build --mode server",
     "strip:ts-ignore": "tsx ./src/strip-ts-ignore.ts",
     "test": "tsx ./src/testServer.ts",
     "generate": "NODE_ENV=production tsx ./src/cli.ts generate",
-    "start": "node --experimental-specifier-resolution=node dist/server.js",
+    "start": "node dist/server.js",
     "publish": "pnpm run build && npm publish --access public",
     "build": "tsx esbuild.config.ts"
   },

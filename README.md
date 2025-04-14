@@ -31,7 +31,7 @@ npx -y  -p @usemodel-dev/cli@latest server
 Build the server
 
 ```bash
-pnpm build:server
+pnpm build
 ```
 
 > You need to run generate command before thi.s
