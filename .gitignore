@@ -3,3 +3,7 @@ node_modules/
 dist/
 openapi-spec
 ./src/generated
+oas.js
+output.js
+oas.ts
+output.ts

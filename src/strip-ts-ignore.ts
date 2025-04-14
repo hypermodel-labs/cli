@@ -43,8 +43,6 @@ tsFiles.forEach(file => project.addSourceFileAtPath(file));
 // Process each source file
 project.getSourceFiles().forEach(sourceFile => {
   let fileModified = false;
-
-  // Remove @ts-ignore comments
   sourceFile.getDescendantsOfKind(ts.SyntaxKind.SingleLineCommentTrivia).forEach(comment => {
     const text = comment.getText();
     if (text.includes('@ts-ignore') || text.includes('@ts-nocheck')) {
@@ -52,8 +50,6 @@ project.getSourceFiles().forEach(sourceFile => {
       fileModified = true;
     }
   });
-
-  // Remove // @ts-ignore comments that might be part of leading comments
   sourceFile.getStatements().forEach(statement => {
     const leadingComments = statement.getLeadingCommentRanges();
     if (leadingComments) {

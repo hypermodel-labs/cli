@@ -4,16 +4,6 @@
 
 Generate a type-safe MCP (Model Context Protocol) server from an OpenAPI specification.
 
-## Installation
-
-You can use the cli using npm:
-
-```bash
-pnpm generate <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON>
-
-```
-
-
 ## CLI Commands
 
 The package provides several CLI commands for managing your MCP server:
@@ -23,29 +13,36 @@ The package provides several CLI commands for managing your MCP server:
 Generate the MCP server code from your OpenAPI specification:
 
 ```bash
-pnpm generate  <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON> --output <dir> (optional)
+npx -y -p @usemodel-dev/cli@latest cli generate <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON>
 
 ```
 
->This will create the mcp server files in the `src/generated` folder. 
+> This will create the mcp server files in the `cwd()` directory.
+
+Run the server
+
+
+```bash
+npx -y  -p @usemodel-dev/cli@latest server
+```
 
 ### Run the server locally
-
 
 Build the server
 
 ```bash
-pnpm build:server
+pnpm build
 ```
-> You need to run generate command before thi.s 
+
+> You need to run generate command before thi.s
 
 ```bash
 pnpm start
 ```
-This will start the server at `http:localhost:3001` 
+
+This will start the server at `http:localhost:3001`
 
 ![OpenAPI-MCP Demo](assets/log.png)
-
 
 ## Environment Variables
 
@@ -54,6 +51,7 @@ The server uses dotenv for configuration. Create a `.env` file in your project r
 ## Dependencies
 
 This package uses several key dependencies:
+
 - @modelcontextprotocol/sdk: For MCP implementation
 - express: For the server framework
 - openapi-typescript: For TypeScript type generation
@@ -65,7 +63,7 @@ This project is hosted on GitHub at https://github.com/@usemodel-dev/cli.git. Fe
 
 ## License
 
-MIT 
+MIT
 
 ## Package Information
 
