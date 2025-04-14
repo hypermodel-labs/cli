@@ -9,7 +9,7 @@ Generate a type-safe MCP (Model Context Protocol) server from an OpenAPI specifi
 You can use the cli using npm:
 
 ```bash
-npx @usemodel-dev/cli generate <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON>
+pnpm generate <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON>
 
 ```
 
@@ -23,13 +23,13 @@ The package provides several CLI commands for managing your MCP server:
 Generate the MCP server code from your OpenAPI specification:
 
 ```bash
-npx @usemodel-dev/cli generate  <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON>
+pnpm generate  <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON>
 ```
 
 ### Run the server locally
 
 ```bash
-npx @usemodel-dev/cli start
+pnpm start
 ```
 
 ## Environment Variables
