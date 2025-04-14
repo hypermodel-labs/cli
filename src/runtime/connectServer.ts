@@ -1,7 +1,7 @@
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import express, { Request, Response } from 'express';
 import { detect } from 'detect-port';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 /**
  * Similar to https://github.com/modelcontextprotocol/typescript-sdk/pull/197/files

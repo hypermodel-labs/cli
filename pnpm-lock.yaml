@@ -102,6 +102,9 @@ importers:
       '@types/rollup':
         specifier: ^0.54.0
         version: 0.54.0
+      esbuild:
+        specifier: ^0.25.2
+        version: 0.25.2
       events:
         specifier: ^3.3.0
         version: 3.3.0

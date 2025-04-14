@@ -2,10 +2,12 @@ import { z } from "zod";
 import createClient from "openapi-fetch";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 // Dynamically import paths from GENERATED_OUTPUT_DIR
-
-
-const { paths } = await import(/* @vite-ignore */`./src${process.env.GENERATED_OUTPUT_DIR}/output.js`);
-const { meta } = await import(/* @vite-ignore */`./src${process.env.GENERATED_OUTPUT_DIR}/oas.js`);
+const { paths } = await import(`../output.js`).catch((e) => {
+  console.log("[DEBUG] Error:", e)
+});
+const { meta } = await import(`../oas.js`).catch((e) => {
+  console.log("[DEBUG] Error:", e)
+});
 type Paths = typeof paths
 
 const client = createClient<Paths>({
@@ -40,7 +42,6 @@ export const createTools = async (server: McpServer) => {
       },
       async ({body, parameters, method, headers }) => {
         try {
-          // @ts-ignore
           const clientMethod = client[method.toUpperCase()];
           const response = await clientMethod(p as any, { // TODO: improve type here.
               params: parameters,

@@ -5,19 +5,17 @@
   "main": "dist/cli.js",
   "bin": {
     "cli": "./dist/cli.js",
-    "generate": "NODE_ENV=production node --experimental-specifier-resolution=node ./dist/cli.js generate",
-    "build": "pnpm run build",
-    "start": "pnpm run build && node --experimental-specifier-resolution=node ./dist/index.js"
+    "server": "./dist/server.js"
   },
   "scripts": {
-    "build": "GENERATED_OUTPUT_DIR=./generated vite build --mode cli",
     "build:server": "vite build --mode server",
     "strip:ts-ignore": "tsx ./src/strip-ts-ignore.ts",
     "compile": "tsc --skipLibCheck --esModuleInterop --module es2022 --moduleResolution node src/generated/*.ts",
     "test": "tsx ./src/testServer.ts",
     "generate": "NODE_ENV=production tsx ./src/cli.ts generate",
     "start": "node --experimental-specifier-resolution=node dist/index.js",
-    "publish": "pnpm run build && npm publish --access public"
+    "publish": "pnpm run build && npm publish --access public",
+    "build": "tsx esbuild.config.ts"
   },
   "publishConfig": {
     "access": "public",
@@ -63,6 +61,7 @@
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@types/rollup": "^0.54.0",
+    "esbuild": "^0.25.2",
     "events": "^3.3.0",
     "openapi-typescript": "*",
     "prettier-plugin-packagejson": "^2.5.10",

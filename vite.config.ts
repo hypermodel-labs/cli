@@ -65,14 +65,18 @@ export default defineConfig(({ mode }) => {
       }),
       addShebangPlugin(),
       handleWindowPlugin(),
-      dynamicImport({
-        loose: true,
-        filter(id) {
-          if (id.includes("@modelcontextprotocol/sdk")) {
-            return true;
-          }
-        },
-      }),
+      dynamicImportVars({
+        warnOnError: true,
+        include: ['./src/generated/*.js']
+      })
+      // dynamicImport({
+      //   loose: true,
+      //   filter(id) {
+      //     if (id.includes("@modelcontextprotocol/sdk")) {
+      //       return true;
+      //     }
+      //   },
+      // }),
     ],
     build: {
       outDir: "./dist",
@@ -82,14 +86,6 @@ export default defineConfig(({ mode }) => {
           format: "es",
           entryFileNames: "[name].js",
           chunkFileNames: "chunks/[name]-[hash].js",
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              return 'vendor';
-            }
-            if (id.includes('generated')) {
-              return 'generated';
-            }
-          }
         },
         external: [
           "@modelcontextprotocol/sdk",
@@ -135,7 +131,7 @@ export default defineConfig(({ mode }) => {
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
       alias: {
         'src': path.resolve(__dirname, './src'),
-        './generated': path.resolve(__dirname, './generated'),
+        // './generated': path.resolve(__dirname, './generated'),
       }
     },
   };

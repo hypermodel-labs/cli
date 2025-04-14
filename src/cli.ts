@@ -1,9 +1,8 @@
 import { Command, Option } from 'commander';
-import { convertTypesToObject } from './generators/convertTypesToObject';
+import { convertTypesToObject } from './generators/convertTypesToObject.js';
 import * as fs from 'fs';
 import * as path from 'path';
-import { generateSingleFileTypesFromOas } from './generators/generateTypes';
-import { stripTSIgnore } from './strip-ts-ignore';
+import { generateSingleFileTypesFromOas } from './generators/generateTypes.js';
 import { execSync } from 'child_process';
 
 const program = new Command();
@@ -17,7 +16,7 @@ program
   .command('generate')
   .description('Generate MCP tools from OpenAPI spec')
   .argument('<filepath>', 'Path to OpenAPI specification file')
-  .addOption(new Option('-o, --output <dir>', 'Path to output directory').default('./src/generated'))
+  .addOption(new Option('-o, --output <dir>', 'Path to output directory').default('.'))
   .action(async (filepath: string, options: { output: string }) => {
     try {
       console.log("Running from:", process.cwd(), options.output);
@@ -37,9 +36,15 @@ program
 
       console.log(`✅ Mcp server objects & types generated`);
 
-      stripTSIgnore(options.output);
+      // stripTSIgnore(options.output);
       console.log('✅ Cleaned up files');
 
+      try {
+        execSync(`./node_modules/.bin/tsc ${options.output}/oas.ts ${options.output}/output.ts --module NodeNext --target es2022 --moduleResolution node16`, { stdio: 'inherit' });
+        console.log('✅ TypeScript compilation complete');
+      } catch (error) {
+        console.error('Error during TypeScript compilation:', error);
+      }
       // await fs.promises.cp('src/generated', 'dist', { recursive: true, filter: (src, _) => !src.includes('.ts') });
       console.log('✅ Ready to publish');
 

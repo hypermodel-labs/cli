@@ -1,7 +1,8 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 // Dynamically import paths from GENERATED_OUTPUT_DIR
-// @ts-ignore
-const { meta } = await import(/* @vite-ignore */`./src${process.env.GENERATED_OUTPUT_DIR}/oas.js`);
+const { meta } = await import(`../oas.js`).catch((e) => {
+  console.log("[DEBUG] Error:", e)
+});
 
 // Create server instance
 export const init = () => new McpServer({
