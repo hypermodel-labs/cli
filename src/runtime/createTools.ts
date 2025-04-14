@@ -43,6 +43,7 @@ export const createTools = async (server: McpServer) => {
       },
       async ({body, parameters, method, headers }) => {
         try {
+          // @ts-ignore
           const clientMethod = client[method.toUpperCase()];
           const response = await clientMethod(p as any, { // TODO: improve type here.
               params: parameters,

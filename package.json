@@ -10,10 +10,9 @@
   "scripts": {
     "build:server": "vite build --mode server",
     "strip:ts-ignore": "tsx ./src/strip-ts-ignore.ts",
-    "compile": "tsc --skipLibCheck --esModuleInterop --module es2022 --moduleResolution node src/generated/*.ts",
     "test": "tsx ./src/testServer.ts",
     "generate": "NODE_ENV=production tsx ./src/cli.ts generate",
-    "start": "node --experimental-specifier-resolution=node dist/index.js",
+    "start": "node --experimental-specifier-resolution=node dist/server.js",
     "publish": "pnpm run build && npm publish --access public",
     "build": "tsx esbuild.config.ts"
   },
