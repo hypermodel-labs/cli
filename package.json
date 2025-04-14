@@ -1,10 +1,11 @@
 {
   "name": "@usemodel-dev/cli",
-  "version": "0.0.5-beta.7",
+  "version": "0.0.5-beta.8",
   "type": "module",
   "main": "dist/cli.js",
   "bin": {
-    "cli": "./dist/cli.js"
+    "cli": "./dist/cli.js",
+    "server": "./dist/server.js"
   },
   "scripts": {
     "build:server": "vite build --mode server",

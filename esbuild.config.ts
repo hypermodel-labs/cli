@@ -72,6 +72,18 @@ await build({
   ...sharedOptions,
   entryPoints: ['./src/cli.ts'],
   outfile: path.join(OUTPUT_DIR, 'cli.js'),
+  write: false,
+}).then(result => {
+  if (result.outputFiles) {
+    for (const output of result.outputFiles) {
+      if (output.path.endsWith('cli.js') ) {
+        const shebang = '#!/usr/bin/env node\n';
+        fs.writeFileSync(output.path, shebang + output.text);
+      } else {
+        fs.writeFileSync(output.path, output.text);
+      }
+    }
+  }
 });
 
 // Build Runtime bundle
@@ -79,4 +91,16 @@ await build({
   ...sharedOptions,
   entryPoints: ['./src/runtime/index.ts'],
   outfile: path.join(OUTPUT_DIR, 'server.js'),
+  write: false,
+}).then(result => {
+  if (result.outputFiles) {
+    for (const output of result.outputFiles) {
+      if (output.path.endsWith('server.js')) {
+        const shebang = '#!/usr/bin/env node\n';
+        fs.writeFileSync(output.path, shebang + output.text);
+      } else {
+        fs.writeFileSync(output.path, output.text);
+      }
+    }
+  }
 });
