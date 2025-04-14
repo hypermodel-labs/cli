@@ -2,10 +2,11 @@ import { z } from "zod";
 import createClient from "openapi-fetch";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 // Dynamically import paths from GENERATED_OUTPUT_DIR
-const { paths } = await import(`../output.js`).catch((e) => {
+const cwd = process.cwd();
+const { paths } = await import(`${cwd}/output.js`).catch((e) => {
   console.log("[DEBUG] Error:", e)
 });
-const { meta } = await import(`../oas.js`).catch((e) => {
+const { meta } = await import(`${cwd}/oas.js`).catch((e) => {
   console.log("[DEBUG] Error:", e)
 });
 type Paths = typeof paths

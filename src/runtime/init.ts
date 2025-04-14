@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 // Dynamically import paths from GENERATED_OUTPUT_DIR
-const { meta } = await import(`../oas.js`).catch((e) => {
+const cwd = process.cwd();
+const { meta } = await import(`${cwd}/oas.js`).catch((e) => {
   console.log("[DEBUG] Error:", e)
 });
 
