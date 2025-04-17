@@ -8,7 +8,7 @@ Generate a type-safe MCP (Model Context Protocol) server from an OpenAPI specifi
 
 This package allows you to generate and run a type-safe MCP server from your OpenAPI specification. It provides CLI tools for server generation, configuration management, and server execution.
 
-If you would like to use an external configuration for a server with your MCP client, you can use the CLI to add it a single command. 
+If you would like to use an external configuration for a server with your MCP client, you can also use the CLI to add it to your IDE / Client with a single command. 
 
 ## Installation
 
