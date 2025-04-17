@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import type { OutputChunk, OutputAsset } from "rollup";
 import path from "path";
-import dynamicImport from "vite-plugin-dynamic-import";
 import dynamicImportVars from "@rollup/plugin-dynamic-import-vars";
 
 // Custom plugin to add shebang
