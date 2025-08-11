@@ -1,3 +1,5 @@
-import { startMcpServer } from "./startServer";
+import { startMcpServer } from "./startServer.js";
 
-startMcpServer()
+// Allow passing the generated directory as first CLI argument
+const argDir = process.argv[2];
+startMcpServer(argDir);

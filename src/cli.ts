@@ -3,8 +3,8 @@ import { convertTypesToObject } from './generators/convertTypesToObject.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { generateSingleFileTypesFromOas } from './generators/generateTypes.js';
-import { execSync } from 'child_process';
 import * as os from 'os';
+import ts from 'typescript';
 
 // Type definitions for configuration
 interface ServerConfig {
@@ -146,7 +146,6 @@ program
   .addOption(new Option('-o, --output <dir>', 'Path to output directory').default('.'))
   .action(async (filepath: string, options: { output: string }) => {
     try {
-      console.log("Running from:", process.cwd(), options.output);
       // Resolve absolute path
       const absolutePath = path.resolve(filepath);
       
@@ -156,22 +155,55 @@ program
         process.exit(1);
       }
 
-      console.log('Generating types from OpenAPI spec file...');
-      const typesFilePath = await generateSingleFileTypesFromOas(absolutePath, "oas", options.output);
+      // Default output directory: .hypermodel under the current working directory
+      const computedDefaultOutput = path.join(process.cwd(), '.hypermodel');
+      const outputDir = options.output && options.output !== '.' ? path.resolve(options.output) : computedDefaultOutput;
 
-      await convertTypesToObject(typesFilePath, options.output);
+      fs.mkdirSync(outputDir, { recursive: true });
+
+      console.log("Using output directory:", outputDir);
+
+      console.log('Generating types from OpenAPI spec file...');
+      const typesFilePath = await generateSingleFileTypesFromOas(absolutePath, "oas", outputDir);
+
+      await convertTypesToObject(typesFilePath, outputDir);
 
       console.log(`✅ Mcp server objects & types generated`);
 
       // stripTSIgnore(options.output);
       console.log('✅ Cleaned up files');
 
-      try {
-        execSync(`./node_modules/.bin/tsc ${options.output}/oas.ts ${options.output}/output.ts --module NodeNext --target es2022 --moduleResolution node16`, { stdio: 'inherit' });
-        console.log('✅ TypeScript compilation complete');
-      } catch (error) {
-        console.error('Error during TypeScript compilation:', error);
+      // Transpile to CommonJS JavaScript without requiring a local tsconfig or tsc binary
+      const filesToTranspile = [path.join(outputDir, 'oas.ts'), path.join(outputDir, 'output.ts')];
+      const compilerOptions: ts.TranspileOptions["compilerOptions"] = {
+        target: ts.ScriptTarget.ES2022,
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.NodeJs,
+        esModuleInterop: true,
+        resolveJsonModule: true,
+        skipLibCheck: true,
+        removeComments: false,
+      };
+
+      for (const tsFile of filesToTranspile) {
+        if (!fs.existsSync(tsFile)) continue;
+        const tsCode = fs.readFileSync(tsFile, 'utf-8');
+        const { outputText, diagnostics } = ts.transpileModule(tsCode, {
+          compilerOptions,
+          fileName: tsFile,
+          reportDiagnostics: true,
+        });
+        const jsFile = tsFile.replace(/\.ts$/, '.js');
+        fs.writeFileSync(jsFile, outputText, 'utf-8');
+        if (diagnostics && diagnostics.length) {
+          const formatted = diagnostics
+            .map(d => ts.flattenDiagnosticMessageText(d.messageText, '\n'))
+            .join('\n');
+          console.warn(`⚠️  Transpile diagnostics for ${path.basename(tsFile)}:\n${formatted}`);
+        }
       }
+
+      console.log('✅ JavaScript artifacts generated');
       // await fs.promises.cp('src/generated', 'dist', { recursive: true, filter: (src, _) => !src.includes('.ts') });
       console.log('✅ Ready to publish');
 

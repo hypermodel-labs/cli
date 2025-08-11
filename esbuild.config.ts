@@ -4,7 +4,6 @@ import path from "path";
 import fs from "fs";
 
 const OUTPUT_DIR = "dist";
-const GENERATED_DIR = "generated";
 
 // Ensure output directory exists before writing files
 fs.mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -31,6 +30,7 @@ const sharedOptions = {
     "openapi-typescript",
     "remeda",
     "prettier",
+    "typescript",
     "express",
     "async_hooks",
     "commander",

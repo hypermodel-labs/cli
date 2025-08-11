@@ -1,22 +1,10 @@
 import { z } from "zod";
 import createClient from "openapi-fetch";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-// Dynamically import paths from GENERATED_OUTPUT_DIR
-const cwd = process.cwd();
-const { paths } = await import(`${cwd}/output.js`).catch((e) => {
-  console.log("[DEBUG] Error:", e)
-});
-const { meta } = await import(`${cwd}/oas.js`).catch((e) => {
-  console.log("[DEBUG] Error:", e)
-});
-type Paths = typeof paths
+import * as path from "path";
+import { pathToFileURL } from "url";
 
-const client = createClient<Paths>({
-  baseUrl: meta.servers[0].url,
-  headers: {
-    "Authorization": `Bearer ${process.env.API_KEY}`,
-  },
-});
+type Paths = any;
 
 
 const createToolName = (path: string) => {
@@ -24,7 +12,21 @@ const createToolName = (path: string) => {
 }
 
 
-export const createTools = async (server: McpServer) => {
+export const createTools = async (server: McpServer, baseDir?: string) => {
+  const base = baseDir ?? path.join(process.cwd(), '.hypermodel');
+  const outputUrl = pathToFileURL(path.join(base, 'output.js')).href;
+  const oasUrl = pathToFileURL(path.join(base, 'oas.js')).href;
+
+  const { paths } = await import(outputUrl);
+  const { meta } = await import(oasUrl);
+
+  const client = createClient<Paths>({
+    baseUrl: meta.servers?.[0]?.url,
+    headers: {
+      Authorization: `Bearer ${process.env.API_KEY ?? ''}`,
+    },
+  });
+
   const pathKeys = Object.keys(paths)
   pathKeys.forEach((p) => {
   const path = paths[p as keyof typeof paths]

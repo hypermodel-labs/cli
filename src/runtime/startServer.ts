@@ -1,14 +1,14 @@
-import { init } from "./init";
-import { createTools } from "./createTools";
-import { connectServer } from "./connectServer";
+import { init } from "./init.js";
+import { createTools } from "./createTools.js";
+import { connectServer } from "./connectServer.js";
  
-export const startMcpServer = async () => {
+export const startMcpServer = async (generatedDir?: string) => {
    
     console.log("initializing server")
-    const server = init()
+    const server = await init(generatedDir)
 
     console.log('Creating tools...');
-    await createTools(server);
+    await createTools(server, generatedDir);
 
     console.log('Starting server...');
     await connectServer(server);

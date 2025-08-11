@@ -1,9 +1,22 @@
-import { Project, SourceFile, Type, Node, InterfaceDeclaration, TypeAliasDeclaration } from "ts-morph";
+import { Project, SourceFile, Type, Node, InterfaceDeclaration, TypeAliasDeclaration, ts } from "ts-morph";
 import fs from "fs";
 
 export const convertTypesToObject = async (typesFilePath: string, outputDir: string): Promise<string> => {
+  // Configure ts-morph without relying on a local tsconfig.json.
+  // This avoids failures when running the CLI in arbitrary directories.
   const project = new Project({
-    tsConfigFilePath: "./tsconfig.json",
+    skipAddingFilesFromTsConfig: true,
+    compilerOptions: {
+      // Keep options minimal and universally compatible
+      target: ts.ScriptTarget.ES2022,
+      esModuleInterop: true,
+      resolveJsonModule: true,
+      skipLibCheck: true,
+      strict: false,
+      allowJs: true,
+      allowSyntheticDefaultImports: true,
+      removeComments: false,
+    },
   });
 
   const sourceFile = project.addSourceFileAtPath(typesFilePath);

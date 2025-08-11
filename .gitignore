@@ -7,3 +7,5 @@ oas.js
 output.js
 oas.ts
 output.ts
+.hypermodel
+test/

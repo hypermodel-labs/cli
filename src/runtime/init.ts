@@ -1,13 +1,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-// Dynamically import paths from GENERATED_OUTPUT_DIR
-const cwd = process.cwd();
-const { meta } = await import(`${cwd}/oas.js`).catch((e) => {
-  console.log("[DEBUG] Error:", e)
-});
+import * as path from "path";
+import { pathToFileURL } from "url";
 
-// Create server instance
-export const init = () => new McpServer({
-    name: `${meta.info.title}'s MCP Server`,
-    version: `${meta.info.version}`,
-});
+// Create server instance loading meta from generated directory
+export const init = async (generatedDir?: string) => {
+  const base = generatedDir ?? path.join(process.cwd(), '.hypermodel');
+  const oasUrl = pathToFileURL(path.join(base, 'oas.js')).href;
+  const { meta } = await import(oasUrl);
+  return new McpServer({
+    name: `${meta.info?.title ?? 'OpenAPI'}'s MCP Server`,
+    version: `${meta.info?.version ?? '0.0.0'}`,
+  });
+}
   
