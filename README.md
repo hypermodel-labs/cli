@@ -32,6 +32,8 @@ npx -y -p @hypermodel/cli@latest cli generate <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSO
 
 > This will create the mcp server files in a `.hypermodel` directory.
 
+
+
 #### Run server with npx
 
 ```bash
@@ -49,7 +51,9 @@ npx -y -p @hypermodel/cli@latest server
 
 ## Contributing
 
-This project is hosted on GitHub at https://github.com/@hypermodel/cli.git. Feel free to open issues or submit pull requests.
+This project is hosted on GitHub at https://github.com/hypermodel-labs/cli.git. 
+
+Feel free to open issues or submit pull requests.
 
 ## License
 
