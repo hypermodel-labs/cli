@@ -5,6 +5,7 @@ import * as path from 'path';
 import { generateSingleFileTypesFromOas } from './generators/generateTypes.js';
 import * as os from 'os';
 import ts from 'typescript';
+import { execSync } from 'child_process';
 
 // Type definitions for configuration
 interface ServerConfig {
@@ -32,6 +33,8 @@ const getConfigPath = (client: string): string => {
       return path.join(homeDir, '.cursor', 'mcp.json');
     case 'windsurf':
       return path.join(homeDir, '.codeium', 'windsurf', 'mcp_config.json');
+    case 'claude-desktop':
+      return path.join(homeDir, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
     case 'claude':
       return path.join(homeDir, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
     default:
@@ -228,6 +231,91 @@ program
       // await fs.promises.cp('src/generated', 'dist', { recursive: true, filter: (src, _) => !src.includes('.ts') });
       console.log('✅ Ready to publish');
 
+    } catch (error) {
+      console.error('Error:', error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+// Add remote @hypermodel/docs server to a client's MCP config, preserving everything else
+program
+  .command('add-docs')
+  .description('Add or update the @hypermodel/docs MCP server for a client (cursor, windsurf, or claude)')
+  .argument('<client>', 'Client type (cursor, windsurf, or claude)')
+  .action((client: string) => {
+    try {
+      const normalizedClient = client.toLowerCase();
+
+      // If targeting Claude app via its CLI, prefer invoking Claude's official CLI over file edits
+      if (normalizedClient === 'claude') {
+        const addCmd = 'claude mcp add --transport sse hypermodel https://mcp.hypermodel.dev/sse';
+        try {
+          const out = execSync(addCmd, { stdio: 'pipe' }).toString();
+          if (out.trim().length) process.stdout.write(out);
+          console.log('✅ Added/updated hypermodel MCP server in Claude via CLI');
+          return;
+        } catch (e: any) {
+          const stdoutMsg = (e?.stdout ? e.stdout.toString() : '').trim();
+          const stderrMsg = (e?.stderr ? e.stderr.toString() : '').trim();
+          const combined = `${stdoutMsg}\n${stderrMsg}`.toLowerCase();
+          // If already exists, remove and re-add to update
+          if (combined.includes('already exists')) {
+            try {
+              const rmOut = execSync('claude mcp remove hypermodel', { stdio: 'pipe' }).toString();
+              if (rmOut.trim().length) process.stdout.write(rmOut);
+              const addOut = execSync(addCmd, { stdio: 'pipe' }).toString();
+              if (addOut.trim().length) process.stdout.write(addOut);
+              console.log('✅ Updated hypermodel MCP server in Claude via CLI');
+              return;
+            } catch (e2: any) {
+              const c2 = `${e2?.stdout ? e2.stdout.toString() : ''}\n${e2?.stderr ? e2.stderr.toString() : ''}`;
+              if (c2.trim().length) process.stderr.write(c2);
+              console.error('Error: Failed to update hypermodel MCP server via Claude CLI.');
+              process.exit(1);
+            }
+          }
+          if (stdoutMsg.length) process.stdout.write(stdoutMsg + '\n');
+          if (stderrMsg.length) process.stderr.write(stderrMsg + '\n');
+          console.error('Error: Failed to execute "claude" CLI. Please ensure Claude CLI is installed and on your PATH.');
+          process.exit(1);
+        }
+      }
+
+      const configPath = getConfigPath(normalizedClient);
+
+      // Read existing config if present
+      let existingConfig: McpConfig & Record<string, unknown> = { mcpServers: {} } as McpConfig & Record<string, unknown>;
+      if (fs.existsSync(configPath)) {
+        try {
+          const fileContent = fs.readFileSync(configPath, 'utf-8');
+          existingConfig = JSON.parse(fileContent) as McpConfig & Record<string, unknown>;
+        } catch {
+          // If existing file is unreadable/invalid, fall back to a minimal valid config
+          existingConfig = { mcpServers: {} } as McpConfig & Record<string, unknown>;
+        }
+      }
+
+      // Ensure mcpServers exists
+      if (!existingConfig.mcpServers || typeof existingConfig.mcpServers !== 'object') {
+        (existingConfig as McpConfig).mcpServers = {};
+      }
+
+      // Update only the @hypermodel/docs server entry, preserving any other properties under it
+      const currentDocsConfig: ServerConfig | Record<string, unknown> =
+        ((existingConfig as McpConfig).mcpServers['@hypermodel/docs'] as ServerConfig | Record<string, unknown>) || {};
+
+      (existingConfig as McpConfig).mcpServers['@hypermodel/docs'] = {
+        ...(currentDocsConfig as Record<string, unknown>),
+        url: 'https://mcp.hypermodel.dev/sse',
+      } as ServerConfig;
+
+      // Write back to disk
+      const dir = path.dirname(configPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(configPath, JSON.stringify(existingConfig, null, 2));
+      console.log(`✅ Added/updated @hypermodel/docs in ${client} configuration at ${configPath}`);
     } catch (error) {
       console.error('Error:', error instanceof Error ? error.message : String(error));
       process.exit(1);
