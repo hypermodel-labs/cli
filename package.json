@@ -1,6 +1,6 @@
 {
   "name": "@hypermodel/cli",
-  "version": "0.0.10",
+  "version": "0.0.10-beta.1",
   "type": "module",
   "main": "dist/cli.js",
   "bin": {
