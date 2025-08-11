@@ -6,6 +6,10 @@ import { generateSingleFileTypesFromOas } from './generators/generateTypes.js';
 import * as os from 'os';
 import ts from 'typescript';
 import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const railwayBin = path.join(__dirname, '../node_modules/.bin/railway');
 
 // Type definitions for configuration
 interface ServerConfig {
@@ -316,6 +320,171 @@ program
       }
       fs.writeFileSync(configPath, JSON.stringify(existingConfig, null, 2));
       console.log(`✅ Added/updated @hypermodel/docs in ${client} configuration at ${configPath}`);
+    } catch (error) {
+      console.error('Error:', error instanceof Error ? error.message : String(error));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('deploy')
+  .description('Deploy the generated MCP server to Railway')
+  .addOption(new Option('-d, --dir <directory>', 'Directory containing generated files').default('.hypermodel'))
+  .addOption(new Option('-n, --name <name>', 'Railway service name'))
+  .addOption(new Option('-e, --env <env...>', 'Environment variables in KEY=VALUE format'))
+  .action(async (options: { dir: string; name?: string; env?: string[] }) => {
+    try {
+      // Resolve the deployment directory
+      const deployDir = path.isAbsolute(options.dir) ? options.dir : path.resolve(options.dir);
+      
+      // Check if deployment directory exists
+      if (!fs.existsSync(deployDir)) {
+        console.error(`Error: Directory not found at ${deployDir}`);
+        console.log('💡 Run "generate" command first to create the deployment files');
+        process.exit(1);
+      }
+
+      // Check for required files
+      const requiredFiles = ['output.js', 'oas.js'];
+      const missingFiles = requiredFiles.filter(file => !fs.existsSync(path.join(deployDir, file)));
+      
+      if (missingFiles.length > 0) {
+        console.error(`Error: Missing required files: ${missingFiles.join(', ')}`);
+        console.log('💡 Run "generate" command first to create the deployment files');
+        process.exit(1);
+      }
+
+      console.log(`🚀 Deploying from directory: ${deployDir}`);
+
+      // Railway CLI is bundled as dependency
+      try {
+        execSync(`"${railwayBin}" --version`, { stdio: 'pipe' });
+      } catch (error) {
+        console.error('Error: Railway CLI failed to execute');
+        console.log('💡 Railway CLI is bundled with this tool. Please report this issue.');
+        console.log('   Or visit: https://docs.railway.app/quick-start');
+        process.exit(1);
+      }
+
+      // Check if user is logged in to Railway
+      if (!process.env.RAILWAY_TOKEN) {
+        console.error('Error: RAILWAY_TOKEN environment variable not set');
+        console.log('💡 Set RAILWAY_TOKEN environment variable or login with: railway login');
+        process.exit(1);
+      }
+
+      // Create Railway project if it doesn't exist
+      try {
+        execSync(`"${railwayBin}" status`, { cwd: deployDir, stdio: 'pipe' });
+        console.log('✅ Using existing Railway project');
+      } catch (error) {
+        console.log('📦 Creating new Railway project...');
+        try {
+          const projectName = options.name || `hypermodel-${Date.now()}`;
+          execSync(`"${railwayBin}" create --name "${projectName}"`, { cwd: deployDir, stdio: 'pipe' });
+          console.log(`✅ Created Railway project: ${projectName}`);
+        } catch (createError) {
+          console.error('Error: Failed to create Railway project');
+          console.error(createError instanceof Error ? createError.message : String(createError));
+          process.exit(1);
+        }
+      }
+
+      // Set environment variables if provided
+      if (options.env && options.env.length > 0) {
+        console.log('⚙️  Setting environment variables...');
+        for (const envVar of options.env) {
+          const [key, ...valueParts] = envVar.split('=');
+          const value = valueParts.join('=');
+          
+          if (!key || !value) {
+            console.warn(`Warning: Skipping invalid environment variable: ${envVar}`);
+            continue;
+          }
+
+          try {
+            execSync(`"${railwayBin}" env set ${key}="${value}"`, { cwd: deployDir, stdio: 'pipe' });
+            console.log(`✅ Set ${key}`);
+          } catch (error) {
+            console.warn(`Warning: Failed to set environment variable ${key}`);
+          }
+        }
+      }
+
+      // Create a simple package.json with start script if it doesn't have one
+      const packageJsonPath = path.join(deployDir, 'package.json');
+      let packageJson: any = { type: 'module' };
+      
+      if (fs.existsSync(packageJsonPath)) {
+        try {
+          packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        } catch (error) {
+          console.warn('Warning: Invalid package.json, creating new one');
+        }
+      }
+
+      // Ensure package.json has the necessary scripts and dependencies
+      if (!packageJson.scripts) {
+        packageJson.scripts = {};
+      }
+      
+      if (!packageJson.scripts.start) {
+        packageJson.scripts.start = 'node output.js';
+      }
+
+      // Add necessary dependencies for MCP server
+      if (!packageJson.dependencies) {
+        packageJson.dependencies = {};
+      }
+      
+      const requiredDeps = {
+        '@modelcontextprotocol/sdk': '^1.6.1',
+        'express': '^4.21.2'
+      };
+
+      Object.entries(requiredDeps).forEach(([pkg, version]) => {
+        if (!packageJson.dependencies[pkg]) {
+          packageJson.dependencies[pkg] = version;
+        }
+      });
+
+      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+      console.log('✅ Updated package.json for deployment');
+
+      // Deploy to Railway
+      console.log('🚀 Deploying to Railway...');
+      try {
+        const deployOutput = execSync(`"${railwayBin}" up`, { 
+          cwd: deployDir, 
+          stdio: 'pipe',
+          maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+        });
+        console.log(deployOutput.toString());
+        
+        // Get the deployment URL
+        try {
+          const statusOutput = execSync(`"${railwayBin}" status`, { cwd: deployDir, stdio: 'pipe' });
+          const status = statusOutput.toString();
+          const urlMatch = status.match(/https:\/\/[^\s]+/);
+          
+          if (urlMatch) {
+            console.log(`✅ Deployment successful!`);
+            console.log(`🌐 URL: ${urlMatch[0]}`);
+          } else {
+            console.log(`✅ Deployment successful! Check Railway dashboard for URL.`);
+          }
+        } catch (statusError) {
+          console.log(`✅ Deployment successful! Check Railway dashboard for details.`);
+        }
+        
+      } catch (deployError) {
+        console.error('Error: Deployment failed');
+        if (deployError instanceof Error) {
+          console.error(deployError.message);
+        }
+        process.exit(1);
+      }
+
     } catch (error) {
       console.error('Error:', error instanceof Error ? error.message : String(error));
       process.exit(1);

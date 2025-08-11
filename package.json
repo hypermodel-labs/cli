@@ -1,6 +1,6 @@
 {
   "name": "@hypermodel/cli",
-  "version": "0.0.11",
+  "version": "0.0.11-beta.1",
   "type": "module",
   "main": "dist/cli.js",
   "bin": {
@@ -28,6 +28,7 @@
   "description": "Generate a Type Safe mcp server from any OpenApi spec",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
+    "@railway/cli": "^3.12.4",
     "commander": "^13.1.0",
     "detect-port": "^2.1.0",
     "express": "^4.21.2",
