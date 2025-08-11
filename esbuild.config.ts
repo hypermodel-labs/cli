@@ -1,31 +1,19 @@
 // esbuild.config.ts
-import { build, Format, Platform, LogLevel } from 'esbuild';
-import path from 'path';
-import fs from 'fs';
+import { build, Format, Platform, LogLevel } from "esbuild";
+import path from "path";
+import fs from "fs";
 
-const OUTPUT_DIR = 'dist';
-const GENERATED_DIR = 'generated';
+const OUTPUT_DIR = "dist";
+const GENERATED_DIR = "generated";
 
-const shebangPlugin = {
-  name: 'shebang',
-  setup(build: any) {
-    build.onEnd(result => {
-      for (const output of result.outputFiles || []) {
-        if (output.path.endsWith('cli.js')) {
-          const shebang = '#!/usr/bin/env node\n';
-          const contents = shebang + output.text;
-          fs.writeFileSync(output.path, contents);
-        }
-      }
-    });
-  }
-};
+// Ensure output directory exists before writing files
+fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
 const sharedOptions = {
   bundle: true,
-  platform: 'node' as Platform,
-  format: 'esm' as Format,
-  target: 'node16',
+  platform: "node" as Platform,
+  format: "esm" as Format,
+  target: "node16",
   sourcemap: true,
   minify: false,
   external: [
@@ -56,28 +44,28 @@ const sharedOptions = {
     "os",
     "child_process",
   ],
-  plugins: [shebangPlugin],
+  plugins: [],
   absWorkingDir: process.cwd(),
-  logLevel: 'info' as LogLevel,
+  logLevel: "info" as LogLevel,
   alias: {
-    src: path.resolve('./src')
+    src: path.resolve("./src"),
   },
-  mainFields: ['module', 'main'],
-  resolveExtensions: ['.ts', '.js', '.mjs', '.jsx', '.json'],
-  nodePaths: [path.join(process.cwd(), 'node_modules')]
+  mainFields: ["module", "main"],
+  resolveExtensions: [".ts", ".js", ".mjs", ".jsx", ".json"],
+  nodePaths: [path.join(process.cwd(), "node_modules")],
 };
 
 // Build CLI bundle
 await build({
   ...sharedOptions,
-  entryPoints: ['./src/cli.ts'],
-  outfile: path.join(OUTPUT_DIR, 'cli.js'),
+  entryPoints: ["./src/cli.ts"],
+  outfile: path.join(OUTPUT_DIR, "cli.js"),
   write: false,
-}).then(result => {
+}).then((result) => {
   if (result.outputFiles) {
     for (const output of result.outputFiles) {
-      if (output.path.endsWith('cli.js') ) {
-        const shebang = '#!/usr/bin/env node\n';
+      if (output.path.endsWith("cli.js")) {
+        const shebang = "#!/usr/bin/env node\n";
         fs.writeFileSync(output.path, shebang + output.text);
       } else {
         fs.writeFileSync(output.path, output.text);
@@ -89,14 +77,14 @@ await build({
 // Build Runtime bundle
 await build({
   ...sharedOptions,
-  entryPoints: ['./src/runtime/index.ts'],
-  outfile: path.join(OUTPUT_DIR, 'server.js'),
+  entryPoints: ["./src/runtime/index.ts"],
+  outfile: path.join(OUTPUT_DIR, "server.js"),
   write: false,
-}).then(result => {
+}).then((result) => {
   if (result.outputFiles) {
     for (const output of result.outputFiles) {
-      if (output.path.endsWith('server.js')) {
-        const shebang = '#!/usr/bin/env node\n';
+      if (output.path.endsWith("server.js")) {
+        const shebang = "#!/usr/bin/env node\n";
         fs.writeFileSync(output.path, shebang + output.text);
       } else {
         fs.writeFileSync(output.path, output.text);
