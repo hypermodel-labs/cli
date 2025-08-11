@@ -163,6 +163,27 @@ program
 
       console.log("Using output directory:", outputDir);
 
+      // Ensure Node treats generated JS as ESM regardless of the surrounding project
+      const pkgPath = path.join(outputDir, 'package.json');
+      try {
+        let pkgJson: Record<string, unknown> = {};
+        if (fs.existsSync(pkgPath)) {
+          try {
+            pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf-8')) as Record<string, unknown>;
+          } catch {
+            // If existing package.json is invalid, overwrite with minimal valid ESM config
+            pkgJson = {};
+          }
+        }
+        if ((pkgJson as any).type !== 'module') {
+          (pkgJson as any).type = 'module';
+          fs.writeFileSync(pkgPath, JSON.stringify(pkgJson, null, 2));
+          console.log('✅ Ensured ESM module type in generated directory');
+        }
+      } catch (e) {
+        console.warn('⚠️  Could not ensure ESM package.json in output directory:', e);
+      }
+
       console.log('Generating types from OpenAPI spec file...');
       const typesFilePath = await generateSingleFileTypesFromOas(absolutePath, "oas", outputDir);
 
