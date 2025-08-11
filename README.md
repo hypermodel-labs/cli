@@ -13,7 +13,7 @@ If you would like to use an external configuration for a server with your MCP cl
 ## Installation
 
 ```bash
-npx -y -p @usemodel-dev/cli@latest
+npx -y -p @hypermodel/cli@latest
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ npx -y -p @usemodel-dev/cli@latest
 Generate the MCP server code from your OpenAPI specification:
 
 ```bash
-npx -y -p @usemodel-dev/cli@latest cli generate <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON>
+npx -y -p @hypermodel/cli@latest cli generate <ABSOLUTE_PATH_TO_SPEC_YAML_OR_JSON>
 ```
 
 > This will create the mcp server files in the `cwd()` directory.
@@ -31,7 +31,7 @@ npx -y -p @usemodel-dev/cli@latest cli generate <ABSOLUTE_PATH_TO_SPEC_YAML_OR_J
 #### Run server with npx
 
 ```bash
-npx -y -p @usemodel-dev/cli@latest server
+npx -y -p @hypermodel/cli@latest server
 ```
 
 ### 2. Configure MCP Client Settings
@@ -39,7 +39,7 @@ npx -y -p @usemodel-dev/cli@latest server
 Add or Update Configuration on your MCP Client (Cursor, Windsurf et al.)
 
 ```bash
-npx -y -p @usemodel-dev/cli@latest cli config add <client> '<config_json>'
+npx -y -p @hypermodel/cli@latest cli config add <client> '<config_json>'
 ```
 
 Where:
@@ -49,19 +49,19 @@ Where:
 Example:
 ```bash
 # Add or update a server configuration for Cursor
-npx -y -p @usemodel-dev/cli@latest cli config add cursor '{"@yourorg/mcp": {"url": "http://localhost:3000", "env": { "apiKey": "XXX" } } }'
+npx -y -p @hypermodel/cli@latest cli config add cursor '{"@yourorg/mcp": {"url": "http://localhost:3000", "env": { "apiKey": "XXX" } } }'
 ```
 
 #### Remove Configuration
 
 ```bash
-npx -y -p @usemodel-dev/cli@latest cli config remove <client> <servername>
+npx -y -p @hypermodel/cli@latest cli config remove <client> <servername>
 ```
 
 Example:
 ```bash
 # Remove a server configuration from Cursor
-npx -y -p @usemodel-dev/cli@latest cli config remove cursor @yourorg/mcp
+npx -y -p @hypermodel/cli@latest cli config remove cursor @yourorg/mcp
 ```
 
 #### Configuration Storage
@@ -104,7 +104,7 @@ The server uses dotenv for configuration. Create a `.env` file in your project r
 
 ## Contributing
 
-This project is hosted on GitHub at https://github.com/@usemodel-dev/cli.git. Feel free to open issues or submit pull requests.
+This project is hosted on GitHub at https://github.com/@hypermodel/cli.git. Feel free to open issues or submit pull requests.
 
 ## License
 

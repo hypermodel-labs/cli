@@ -20,7 +20,7 @@ interface McpConfig {
 const program = new Command();
 
 program
-  .name('@usemodel-dev/cli')
+  .name('@hypermodel/cli')
   .description('CLI to generate MCP tools from OpenAPI specs')
   .version('0.0.1');
 

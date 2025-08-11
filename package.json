@@ -1,5 +1,5 @@
 {
-  "name": "@usemodel-dev/cli",
+  "name": "@hypermodel/cli",
   "version": "0.0.7-beta.1",
   "type": "module",
   "main": "dist/cli.js",
@@ -22,9 +22,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/usemodel-dev/cli.git"
+    "url": "git+https://github.com/hypermodel-labs/cli.git"
   },
-  "author": "usemodel-dev",
+  "author": "hypermodel",
   "description": "Generate a Type Safe mcp server from an OpenApi spec",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
