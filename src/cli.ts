@@ -360,7 +360,7 @@ program
       try {
         execSync(`"${railwayBin}" --version`, { stdio: 'pipe' });
       } catch (error) {
-        console.error('Error: Railway CLI failed to execute');
+        console.error('Error: Railway CLI failed to execute', error);
         console.log('💡 Railway CLI is bundled with this tool. Please report this issue.');
         console.log('   Or visit: https://docs.railway.app/quick-start');
         process.exit(1);
