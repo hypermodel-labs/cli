@@ -7,9 +7,54 @@ import * as os from 'os';
 import ts from 'typescript';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const railwayBin = path.join(__dirname, '../node_modules/.bin/railway');
+
+// Robustly resolve the Railway CLI command in a variety of environments (npx, local install, PATH)
+const resolveRailwayCommand = (): string => {
+  // 1) Explicit override
+  const envOverride = process.env.RAILWAY_BIN?.trim();
+  if (envOverride) return JSON.stringify(envOverride);
+
+  // 2) Resolve the installed package location and run its JS entry directly with Node
+  try {
+    const esmRequire = createRequire(import.meta.url);
+    const railwayPkgJsonPath = esmRequire.resolve('@railway/cli/package.json');
+    const pkg = JSON.parse(fs.readFileSync(railwayPkgJsonPath, 'utf-8')) as Record<string, unknown>;
+    const binField = (pkg as any).bin as string | Record<string, string> | undefined;
+    let relativeBin: string | undefined;
+    if (typeof binField === 'string') {
+      relativeBin = binField;
+    } else if (binField && typeof binField === 'object') {
+      relativeBin = binField['railway'] ?? Object.values(binField)[0];
+    }
+    if (relativeBin) {
+      const absBin = path.join(path.dirname(railwayPkgJsonPath), relativeBin);
+      // Run via node to avoid relying on shell wrappers/symlinks
+      return `node ${JSON.stringify(absBin)}`;
+    }
+  } catch {
+    // ignore and continue to other strategies
+  }
+
+  // 3) Try local .bin symlink near this package
+  const localBin = path.join(__dirname, '../node_modules/.bin/railway');
+  if (fs.existsSync(localBin)) return JSON.stringify(localBin);
+
+  // 4) Try system PATH
+  try {
+    execSync('railway --version', { stdio: 'ignore' });
+    return 'railway';
+  } catch {
+    // ignore
+  }
+
+  // 5) Final fallback: ephemeral npx install
+  return 'npx -y -p @railway/cli@latest railway';
+};
+
+const railwayCmd = resolveRailwayCommand();
 
 // Type definitions for configuration
 interface ServerConfig {
@@ -356,9 +401,9 @@ program
 
       console.log(`🚀 Deploying from directory: ${deployDir}`);
 
-      // Railway CLI is bundled as dependency
+      // Railway CLI availability check
       try {
-        execSync(`"${railwayBin}" --version`, { stdio: 'pipe' });
+        execSync(`${railwayCmd} --version`, { stdio: 'pipe' });
       } catch (error) {
         console.error('Error: Railway CLI failed to execute', error);
         console.log('💡 Railway CLI is bundled with this tool. Please report this issue.');
@@ -375,13 +420,13 @@ program
 
       // Create Railway project if it doesn't exist
       try {
-        execSync(`"${railwayBin}" status`, { cwd: deployDir, stdio: 'pipe' });
+        execSync(`${railwayCmd} status`, { cwd: deployDir, stdio: 'pipe' });
         console.log('✅ Using existing Railway project');
       } catch (error) {
         console.log('📦 Creating new Railway project...');
         try {
           const projectName = options.name || `hypermodel-${Date.now()}`;
-          execSync(`"${railwayBin}" create --name "${projectName}"`, { cwd: deployDir, stdio: 'pipe' });
+          execSync(`${railwayCmd} create --name ${JSON.stringify(projectName)}`, { cwd: deployDir, stdio: 'pipe' });
           console.log(`✅ Created Railway project: ${projectName}`);
         } catch (createError) {
           console.error('Error: Failed to create Railway project');
@@ -403,7 +448,7 @@ program
           }
 
           try {
-            execSync(`"${railwayBin}" env set ${key}="${value}"`, { cwd: deployDir, stdio: 'pipe' });
+            execSync(`${railwayCmd} env set ${JSON.stringify(key)}=${JSON.stringify(value)}`, { cwd: deployDir, stdio: 'pipe' });
             console.log(`✅ Set ${key}`);
           } catch (error) {
             console.warn(`Warning: Failed to set environment variable ${key}`);
@@ -454,7 +499,7 @@ program
       // Deploy to Railway
       console.log('🚀 Deploying to Railway...');
       try {
-        const deployOutput = execSync(`"${railwayBin}" up`, { 
+        const deployOutput = execSync(`${railwayCmd} up`, { 
           cwd: deployDir, 
           stdio: 'pipe',
           maxBuffer: 1024 * 1024 * 10 // 10MB buffer
@@ -463,7 +508,7 @@ program
         
         // Get the deployment URL
         try {
-          const statusOutput = execSync(`"${railwayBin}" status`, { cwd: deployDir, stdio: 'pipe' });
+          const statusOutput = execSync(`${railwayCmd} status`, { cwd: deployDir, stdio: 'pipe' });
           const status = statusOutput.toString();
           const urlMatch = status.match(/https:\/\/[^\s]+/);
           
