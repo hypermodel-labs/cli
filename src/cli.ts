@@ -7,54 +7,9 @@ import * as os from 'os';
 import ts from 'typescript';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
-import { createRequire } from 'module';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Robustly resolve the Railway CLI command in a variety of environments (npx, local install, PATH)
-const resolveRailwayCommand = (): string => {
-  // 1) Explicit override
-  const envOverride = process.env.RAILWAY_BIN?.trim();
-  if (envOverride) return JSON.stringify(envOverride);
-
-  // 2) Resolve the installed package location and run its JS entry directly with Node
-  try {
-    const esmRequire = createRequire(import.meta.url);
-    const railwayPkgJsonPath = esmRequire.resolve('@railway/cli/package.json');
-    const pkg = JSON.parse(fs.readFileSync(railwayPkgJsonPath, 'utf-8')) as Record<string, unknown>;
-    const binField = (pkg as any).bin as string | Record<string, string> | undefined;
-    let relativeBin: string | undefined;
-    if (typeof binField === 'string') {
-      relativeBin = binField;
-    } else if (binField && typeof binField === 'object') {
-      relativeBin = binField['railway'] ?? Object.values(binField)[0];
-    }
-    if (relativeBin) {
-      const absBin = path.join(path.dirname(railwayPkgJsonPath), relativeBin);
-      // Run via node to avoid relying on shell wrappers/symlinks
-      return `node ${JSON.stringify(absBin)}`;
-    }
-  } catch {
-    // ignore and continue to other strategies
-  }
-
-  // 3) Try local .bin symlink near this package
-  const localBin = path.join(__dirname, '../node_modules/.bin/railway');
-  if (fs.existsSync(localBin)) return JSON.stringify(localBin);
-
-  // 4) Try system PATH
-  try {
-    execSync('railway --version', { stdio: 'ignore' });
-    return 'railway';
-  } catch {
-    // ignore
-  }
-
-  // 5) Final fallback: ephemeral npx install
-  return 'npx -y -p @railway/cli@latest railway';
-};
-
-const railwayCmd = resolveRailwayCommand();
 
 // Type definitions for configuration
 interface ServerConfig {
@@ -251,7 +206,7 @@ program
       const compilerOptions: ts.TranspileOptions["compilerOptions"] = {
         target: ts.ScriptTarget.ES2022,
         module: ts.ModuleKind.ESNext,
-        moduleResolution: ts.ModuleResolutionKind.NodeJs,
+        moduleResolution: ts.ModuleResolutionKind.Node10,
         esModuleInterop: true,
         resolveJsonModule: true,
         skipLibCheck: true,
@@ -373,11 +328,11 @@ program
 
 program
   .command('deploy')
-  .description('Deploy the generated MCP server to Railway')
+  .description('Prepare and deploy the generated MCP server to Railway')
   .addOption(new Option('-d, --dir <directory>', 'Directory containing generated files').default('.hypermodel'))
   .addOption(new Option('-n, --name <name>', 'Railway service name'))
-  .addOption(new Option('-e, --env <env...>', 'Environment variables in KEY=VALUE format'))
-  .action(async (options: { dir: string; name?: string; env?: string[] }) => {
+  .addOption(new Option('--prepare-only', 'Only prepare deployment files without deploying'))
+  .action(async (options: { dir: string; name?: string; prepareOnly?: boolean }) => {
     try {
       // Resolve the deployment directory
       const deployDir = path.isAbsolute(options.dir) ? options.dir : path.resolve(options.dir);
@@ -399,6 +354,8 @@ program
         process.exit(1);
       }
 
+      console.log(`📦 Preparing deployment in: ${deployDir}`);
+
       // Create server entry point that properly initializes the MCP server
       const serverEntryPath = path.join(deployDir, 'server.js');
       const serverEntryContent = `// Auto-generated server entry point for Railway deployment
@@ -410,64 +367,7 @@ startMcpServer('.');
       fs.writeFileSync(serverEntryPath, serverEntryContent);
       console.log('✅ Created server entry point');
 
-      console.log(`🚀 Deploying from directory: ${deployDir}`);
-
-      // Railway CLI availability check
-      try {
-        execSync(`${railwayCmd} --version`, { stdio: 'pipe' });
-      } catch (error) {
-        console.error('Error: Railway CLI failed to execute', error);
-        console.log('💡 Railway CLI is bundled with this tool. Please report this issue.');
-        console.log('   Or visit: https://docs.railway.app/quick-start');
-        process.exit(1);
-      }
-
-      // Check if user is logged in to Railway
-      if (!process.env.RAILWAY_TOKEN) {
-        console.error('Error: RAILWAY_TOKEN environment variable not set');
-        console.log('💡 Set RAILWAY_TOKEN environment variable or login with: railway login');
-        process.exit(1);
-      }
-
-      // Create Railway project if it doesn't exist
-      try {
-        execSync(`${railwayCmd} status`, { cwd: deployDir, stdio: 'pipe' });
-        console.log('✅ Using existing Railway project');
-      } catch (error) {
-        console.log('📦 Creating new Railway project...');
-        try {
-          const projectName = options.name || `hypermodel-${Date.now()}`;
-          execSync(`${railwayCmd} create --name ${JSON.stringify(projectName)}`, { cwd: deployDir, stdio: 'pipe' });
-          console.log(`✅ Created Railway project: ${projectName}`);
-        } catch (createError) {
-          console.error('Error: Failed to create Railway project');
-          console.error(createError instanceof Error ? createError.message : String(createError));
-          process.exit(1);
-        }
-      }
-
-      // Set environment variables if provided
-      if (options.env && options.env.length > 0) {
-        console.log('⚙️  Setting environment variables...');
-        for (const envVar of options.env) {
-          const [key, ...valueParts] = envVar.split('=');
-          const value = valueParts.join('=');
-          
-          if (!key || !value) {
-            console.warn(`Warning: Skipping invalid environment variable: ${envVar}`);
-            continue;
-          }
-
-          try {
-            execSync(`${railwayCmd} env set ${JSON.stringify(key)}=${JSON.stringify(value)}`, { cwd: deployDir, stdio: 'pipe' });
-            console.log(`✅ Set ${key}`);
-          } catch (error) {
-            console.warn(`Warning: Failed to set environment variable ${key}`);
-          }
-        }
-      }
-
-      // Create a simple package.json with start script if it doesn't have one
+      // Create a simple package.json with start script
       const packageJsonPath = path.join(deployDir, 'package.json');
       let packageJson: any = { type: 'module' };
       
@@ -476,6 +376,7 @@ startMcpServer('.');
           packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
         } catch (error) {
           console.warn('Warning: Invalid package.json, creating new one');
+          packageJson = { type: 'module' };
         }
       }
 
@@ -518,39 +419,58 @@ startMcpServer('.');
       fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
       console.log('✅ Updated package.json for deployment');
 
-      // Deploy to Railway
-      console.log('🚀 Deploying to Railway...');
-      try {
-        const deployOutput = execSync(`${railwayCmd} up`, { 
-          cwd: deployDir, 
-          stdio: 'pipe',
-          maxBuffer: 1024 * 1024 * 10 // 10MB buffer
-        });
-        console.log(deployOutput.toString());
-        
-        // Get the deployment URL
-        try {
-          const statusOutput = execSync(`${railwayCmd} status`, { cwd: deployDir, stdio: 'pipe' });
-          const status = statusOutput.toString();
-          const urlMatch = status.match(/https:\/\/[^\s]+/);
-          
-          if (urlMatch) {
-            console.log(`✅ Deployment successful!`);
-            console.log(`🌐 URL: ${urlMatch[0]}`);
-          } else {
-            console.log(`✅ Deployment successful! Check Railway dashboard for URL.`);
-          }
-        } catch (statusError) {
-          console.log(`✅ Deployment successful! Check Railway dashboard for details.`);
-        }
-        
-      } catch (deployError) {
-        console.error('Error: Deployment failed');
-        if (deployError instanceof Error) {
-          console.error(deployError.message);
-        }
-        process.exit(1);
+      // Create railway.toml for Railway configuration
+      const railwayTomlPath = path.join(deployDir, 'railway.toml');
+      const serviceName = options.name || '@hypermodel/hosted';
+      const railwayTomlContent = `[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "npm start"
+
+[[services]]
+name = "${serviceName}"
+source = "."
+`;
+      fs.writeFileSync(railwayTomlPath, railwayTomlContent);
+      console.log('✅ Created railway.toml configuration');
+
+      if (options.prepareOnly) {
+        console.log('✅ Deployment files prepared successfully!');
+        console.log(`📁 Directory: ${deployDir}`);
+        console.log(`\n🚀 To deploy to Railway, run these commands:`);
+        console.log(`   cd ${path.relative(process.cwd(), deployDir)}`);
+        console.log(`   npx -y -p @railway/cli@latest railway init -n '${serviceName}'`);
+        console.log(`   npx -y -p @railway/cli@latest railway link`);
+        console.log(`   npx -y -p @railway/cli@latest railway up --detach`);
+        return;
       }
+
+      // Interactive deployment flow
+      console.log('\n🚀 Starting Railway deployment...');
+      
+      // Check if Railway CLI is available
+      let railwayAvailable = false;
+      try {
+        execSync('railway --version', { stdio: 'ignore' });
+        railwayAvailable = true;
+      } catch {
+        // Railway CLI not available, guide user through npx commands
+      }
+      
+        console.log('\n📋 Please run these commands manually:');
+        console.log(`\n1. Navigate to deployment directory:`);
+        console.log(`   cd ${path.relative(process.cwd(), deployDir)}`);
+        console.log(`\n2. Login to Railway:`);
+        console.log(`   npx -y -p @railway/cli@latest railway login`);
+        console.log(`\n3. Initialize Railway project:`);
+        console.log(`   npx -y -p @railway/cli@latest railway init -n '${serviceName}'`);
+        console.log(`\n4. Link to Railway (follow prompts to login if needed):`);
+        console.log(`   npx -y -p @railway/cli@latest railway link`);
+        console.log(`\n4. Deploy your MCP server:`);
+        console.log(`   npx -y -p @railway/cli@latest railway up --detach`);
+        console.log(`\n✨ Your MCP server will be deployed and you'll get a URL to use in your MCP client!`);
+        return;
 
     } catch (error) {
       console.error('Error:', error instanceof Error ? error.message : String(error));
