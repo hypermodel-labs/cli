@@ -399,6 +399,17 @@ program
         process.exit(1);
       }
 
+      // Create server entry point that properly initializes the MCP server
+      const serverEntryPath = path.join(deployDir, 'server.js');
+      const serverEntryContent = `// Auto-generated server entry point for Railway deployment
+import { startMcpServer } from '@hypermodel/cli/dist/startServer.js';
+
+// Start the MCP server with the current directory as the generated directory
+startMcpServer('.');
+`;
+      fs.writeFileSync(serverEntryPath, serverEntryContent);
+      console.log('✅ Created server entry point');
+
       console.log(`🚀 Deploying from directory: ${deployDir}`);
 
       // Railway CLI availability check
@@ -474,7 +485,7 @@ program
       }
       
       if (!packageJson.scripts.start) {
-        packageJson.scripts.start = 'node output.js';
+        packageJson.scripts.start = 'node server.js';
       }
 
       // Add necessary dependencies for MCP server
@@ -482,8 +493,19 @@ program
         packageJson.dependencies = {};
       }
       
+      // Get current CLI version for dependency
+      let cliVersion = '0.0.11-beta.3'; // fallback
+      try {
+        const cliPkgPath = path.join(__dirname, '../package.json');
+        const cliPkg = JSON.parse(fs.readFileSync(cliPkgPath, 'utf-8'));
+        cliVersion = cliPkg.version;
+      } catch (error) {
+        console.warn('Warning: Could not read CLI package.json, using fallback version');
+      }
+
       const requiredDeps = {
         '@modelcontextprotocol/sdk': '^1.6.1',
+        '@hypermodel/cli': `^${cliVersion}`,
         'express': '^4.21.2'
       };
 

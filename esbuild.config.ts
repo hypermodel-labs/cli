@@ -92,3 +92,11 @@ await build({
     }
   }
 });
+
+// Build startServer module for deployment use
+await build({
+  ...sharedOptions,
+  entryPoints: ["./src/runtime/startServer.ts"],
+  outfile: path.join(OUTPUT_DIR, "startServer.js"),
+  write: true,
+});
