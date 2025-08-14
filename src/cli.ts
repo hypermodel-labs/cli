@@ -41,8 +41,17 @@ const getConfigPath = (client: string): string => {
       return path.join(homeDir, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
     case 'claude':
       return path.join(homeDir, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
+    case 'amp':
+      // Platform-specific paths for amp
+      if (process.platform === 'win32') {
+        // Windows: %APPDATA%\amp\settings.json
+        return path.join(process.env.APPDATA || path.join(homeDir, 'AppData', 'Roaming'), 'amp', 'settings.json');
+      } else {
+        // macOS and Linux: ~/.config/amp/settings.json
+        return path.join(homeDir, '.config', 'amp', 'settings.json');
+      }
     default:
-      throw new Error('Invalid client type. Must be one of: cursor, windsurf, or claude');
+      throw new Error('Invalid client type. Must be one of: cursor, windsurf, claude, or amp');
   }
 };
 
@@ -85,7 +94,7 @@ const configCommand = program.command('config');
 configCommand
   .command('add')
   .description('Add or update MCP server configuration for a client')
-  .argument('<client>', 'Client type (cursor, windsurf, or claude)')
+  .argument('<client>', 'Client type (cursor, windsurf, claude, or amp)')
   .argument('<config>', 'Configuration JSON string')
   .action((client: string, configStr: string) => {
     try {
@@ -109,7 +118,7 @@ configCommand
 configCommand
   .command('remove')
   .description('Remove a server configuration from a client')
-  .argument('<client>', 'Client type (cursor, windsurf, or claude)')
+  .argument('<client>', 'Client type (cursor, windsurf, claude, or amp)')
   .argument('<servername>', 'Name of the server to remove')
   .action((client: string, servername: string) => {
     try {
@@ -244,8 +253,8 @@ program
 // Add remote @hypermodel/docs server to a client's MCP config, preserving everything else
 program
   .command('add-docs')
-  .description('Add or update the @hypermodel/docs MCP server for a client (cursor, windsurf, or claude)')
-  .argument('<client>', 'Client type (cursor, windsurf, or claude)')
+  .description('Add or update the @hypermodel/docs MCP server for a client (cursor, windsurf, claude, or amp)')
+  .argument('<client>', 'Client type (cursor, windsurf, claude, or amp)')
   .action((client: string) => {
     try {
       const normalizedClient = client.toLowerCase();
