@@ -296,6 +296,66 @@ program
 
       const configPath = getConfigPath(normalizedClient);
 
+      // Special handling for Amp client
+      if (normalizedClient === 'amp') {
+        // Read existing config if present
+        let existingConfig: Record<string, unknown> = {};
+        if (fs.existsSync(configPath)) {
+          try {
+            const fileContent = fs.readFileSync(configPath, 'utf-8');
+            existingConfig = JSON.parse(fileContent) as Record<string, unknown>;
+          } catch {
+            // If existing file is unreadable/invalid, fall back to a minimal valid config
+            existingConfig = {};
+          }
+        }
+
+        // Add amp.mcpServers configuration
+        if (!existingConfig['amp.mcpServers'] || typeof existingConfig['amp.mcpServers'] !== 'object') {
+          existingConfig['amp.mcpServers'] = {};
+        }
+
+        (existingConfig['amp.mcpServers'] as Record<string, unknown>)['hypermodel'] = {
+          command: 'npx',
+          args: ['mcp-remote', 'https://mcp.hypermodel.dev/sse']
+        };
+
+        // Add amp.permissions configuration
+        if (!existingConfig['amp.permissions'] || !Array.isArray(existingConfig['amp.permissions'])) {
+          existingConfig['amp.permissions'] = [];
+        }
+
+        // Check if hypermodel permission already exists
+        const permissions = existingConfig['amp.permissions'] as Array<Record<string, unknown>>;
+        const existingPermissionIndex = permissions.findIndex(
+          perm => perm.tool === 'mcp__hypermodel_*'
+        );
+
+        if (existingPermissionIndex >= 0) {
+          // Update existing permission
+          permissions[existingPermissionIndex] = {
+            tool: 'mcp__hypermodel_*',
+            action: 'allow'
+          };
+        } else {
+          // Add new permission
+          permissions.push({
+            tool: 'mcp__hypermodel_*',
+            action: 'allow'
+          });
+        }
+
+        // Write back to disk
+        const dir = path.dirname(configPath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(configPath, JSON.stringify(existingConfig, null, 2));
+        console.log(`✅ Added/updated hypermodel MCP server in ${client} configuration at ${configPath}`);
+        return;
+      }
+
+      // Standard handling for other clients
       // Read existing config if present
       let existingConfig: McpConfig & Record<string, unknown> = { mcpServers: {} } as McpConfig & Record<string, unknown>;
       if (fs.existsSync(configPath)) {
