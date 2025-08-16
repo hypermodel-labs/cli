@@ -261,7 +261,7 @@ program
 
       // If targeting Claude app via its CLI, prefer invoking Claude's official CLI over file edits
       if (normalizedClient === 'claude') {
-        const addCmd = 'claude mcp add --transport sse hypermodel https://mcp.hypermodel.dev/sse';
+        const addCmd = 'claude mcp add --transport sse hypermodel https://mcp.hypermodel.dev/mcp';
         try {
           const out = execSync(addCmd, { stdio: 'pipe' }).toString();
           if (out.trim().length) process.stdout.write(out);
@@ -317,7 +317,7 @@ program
 
         (existingConfig['amp.mcpServers'] as Record<string, unknown>)['hypermodel'] = {
           command: 'npx',
-          args: ['mcp-remote', 'https://mcp.hypermodel.dev/sse']
+          args: ['mcp-remote', 'https://mcp.hypermodel.dev/mcp']
         };
 
         // Add amp.permissions configuration
@@ -379,7 +379,7 @@ program
 
       (existingConfig as McpConfig).mcpServers['@hypermodel/docs'] = {
         ...(currentDocsConfig as Record<string, unknown>),
-        url: 'https://mcp.hypermodel.dev/sse',
+        url: 'https://mcp.hypermodel.dev/mcp',
       } as ServerConfig;
 
       // Write back to disk
