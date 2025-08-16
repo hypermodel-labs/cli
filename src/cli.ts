@@ -41,6 +41,8 @@ const getConfigPath = (client: string): string => {
       return path.join(homeDir, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
     case 'claude':
       return path.join(homeDir, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json');
+    case 'vscode':
+      return path.join(process.cwd(), '.vscode', 'mcp.json');
     case 'amp':
       // Platform-specific paths for amp
       if (process.platform === 'win32') {
@@ -51,7 +53,7 @@ const getConfigPath = (client: string): string => {
         return path.join(homeDir, '.config', 'amp', 'settings.json');
       }
     default:
-      throw new Error('Invalid client type. Must be one of: cursor, windsurf, claude, or amp');
+      throw new Error('Invalid client type. Must be one of: cursor, windsurf, claude, vscode, or amp');
   }
 };
 
@@ -295,6 +297,43 @@ program
       }
 
       const configPath = getConfigPath(normalizedClient);
+
+      // Special handling for VS Code client
+      if (normalizedClient === 'vscode') {
+        // Read existing config if present
+        let existingConfig: Record<string, unknown> = {};
+        if (fs.existsSync(configPath)) {
+          try {
+            const fileContent = fs.readFileSync(configPath, 'utf-8');
+            existingConfig = JSON.parse(fileContent) as Record<string, unknown>;
+          } catch {
+            existingConfig = {};
+          }
+        }
+
+        // Ensure servers object exists
+        if (!existingConfig['servers'] || typeof existingConfig['servers'] !== 'object') {
+          (existingConfig as Record<string, unknown>)['servers'] = {};
+        }
+
+        const servers = (existingConfig as Record<string, any>)['servers'];
+        const currentDocs = servers['@hypermodel/docs'] || {};
+
+        // Set or update the @hypermodel/docs entry with the hypermodel MCP URL
+        servers['@hypermodel/docs'] = {
+          ...currentDocs,
+          url: 'https://mcp.hypermodel.dev/mcp'
+        };
+
+        // Write back to disk
+        const dir = path.dirname(configPath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(configPath, JSON.stringify(existingConfig, null, 2));
+        console.log(`✅ Added/updated @hypermodel/docs in vscode configuration at ${configPath}`);
+        return;
+      }
 
       // Special handling for Amp client
       if (normalizedClient === 'amp') {
