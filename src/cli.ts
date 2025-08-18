@@ -263,7 +263,7 @@ program
 
       // If targeting Claude app via its CLI, prefer invoking Claude's official CLI over file edits
       if (normalizedClient === 'claude') {
-        const addCmd = 'claude mcp add --transport sse hypermodel https://mcp.hypermodel.dev/mcp';
+        const addCmd = 'claude mcp add --transport http hypermodel https://mcp.hypermodel.dev/mcp';
         try {
           const out = execSync(addCmd, { stdio: 'pipe' }).toString();
           if (out.trim().length) process.stdout.write(out);
